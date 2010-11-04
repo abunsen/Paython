@@ -3,7 +3,7 @@ import xml.dom.minidom
 import base64
 import re
 
-from lib.utils import parse_xml
+from utils import parse_xml
 
 class XMLGatewayInterface(object):
     def __init__(self, host, ssl=False, auth=False, debug=False, special_params={}):

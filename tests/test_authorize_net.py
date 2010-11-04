@@ -1,3 +1,5 @@
+from paython.gateways import authorize_net
+
 from nose.tools import assert_equals, with_setup
 
 def setup():

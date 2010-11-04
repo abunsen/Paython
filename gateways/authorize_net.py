@@ -1,8 +1,7 @@
 import urllib
 
-
 class Authorize(object):
-
+    """TODO needs docstring"""
     API_BASE = {
         'transaction' : 'secure.authorize.net', # https
         'test' : 'test.authorize.net'

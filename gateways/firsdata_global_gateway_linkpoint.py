@@ -1,6 +1,6 @@
 import random
 
-from lib.api import XMLGatewayInterface, GatewayError
+from paython.lib.api import XMLGatewayInterface, GatewayError
 
 class FirstDataError(Exception):
     """Useful if you want to raise an exception on a failed call"""
