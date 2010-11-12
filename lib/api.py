@@ -5,7 +5,7 @@ import re
 
 from lib.utils import parse_xml
 
-class XMLGatewayInterface(object):
+class XMLGateway(object):
     def __init__(self, host, ssl=False, auth=False, debug=False, special_params={}):
         """ initalize API call session
 
@@ -149,18 +149,11 @@ class XMLGatewayInterface(object):
 
         return resp_dict
 
-class RequestError(Exception):
-    """ Errors during the API Request """
-    def __init__(self, msg):
-        self.msg = msg
+class SOAPGateway(object):
+    pass
 
-    def __str__(self):
-        return repr(self.msg)
+class GetGateway(object):
+    pass
 
-class GatewayError(Exception):
-    """ Errors returned from API Gateway """
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return repr(self.msg)
+class PostGateway(object):
+    pass

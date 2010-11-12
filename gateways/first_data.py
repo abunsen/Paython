@@ -1,6 +1,6 @@
 import random
 
-from lib.api import XMLGatewayInterface, GatewayError
+from lib.api import XMLGateway, GatewayError
 
 class FirstDataError(Exception):
     """Useful if you want to raise an exception on a failed call"""
@@ -9,7 +9,7 @@ class FirstDataError(Exception):
     def __str__(self):
         return self.value
 
-class FirstData(XMLGatewayInterface):
+class FirstData(XMLGateway):
     """ Execute First Data Gateway API calls through a simple interface
 
     This wrapper is used to place orders via API. XML Meta:
@@ -61,8 +61,7 @@ class FirstData(XMLGatewayInterface):
     def __init__(self, api_user, debug=False, test=False):
         self.api_user = api_user
         self.test = test
-        ssl_connect_params = {'port':'1129', 'key_file':'../keys/firstdata.pem-file', 'cert_file':'../keys/firstdata.pem-file'}
-        super(FirstData, self).__init__(self.API_BASE['order'], ssl=True, debug=debug, special_params=ssl_connect_params)
+        super(FirstData, self).__init__(self.API_BASE['order'], ssl=True, debug=debug)
 
     def auth(self, amount=None, trans_data=None, cc_data=None):
         """
@@ -146,9 +145,9 @@ class FirstData(XMLGatewayInterface):
 
         return response_dict
 
-    def credit(self, amount=None, trans_id=None):
+    def credit(self, amount=None, trans_id=None, card_num=None):
         """
-        Send a transaction to be refunded (partially or fully)
+        Send a transaction to be refunded (partially or fully) - needs to be activated by FirstData
         """
         response_dict = {}
 
@@ -163,6 +162,9 @@ class FirstData(XMLGatewayInterface):
 
         #setting refund total
         super(FirstData, self).set('order/payment/chargetotal', amount)
+
+        # needed for credits 
+        super(FirstData, self).set('order/creditcard/cardnumber', card_num)
 
         response_dict = self.post()
 
