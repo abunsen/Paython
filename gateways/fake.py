@@ -1,6 +1,7 @@
 """fake gateway for paython"""
 import json
 
+from decimal import *
 from core import Gateway
 
 class FakeGateway(Gateway):

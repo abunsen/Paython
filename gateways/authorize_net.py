@@ -1,222 +1,176 @@
-import urllib
+from Paython.exceptions import *
+import time
 
-class Authorize(object):
+from Paython.lib.api import GetGateway
+
+class AuthorizeNet(GetGateway):
     """TODO needs docstring"""
-    API_BASE = {
-        'transaction' : 'secure.authorize.net', # https
-        'test' : 'test.authorize.net'
-    }
-
-    API_URI = {
-        'transaction' : '/gateway/transact.dll'
-    }
-
-    REQUEST_DICT = {}
     VERSION = '3.1'
-    TRANS_DATA_KEYS = ['x_first_name', 'x_last_name', 'x_zip', 'x_city', 'x_state', 
-                         'x_email', 'x_customer_ip', 'x_card_code', 'x_exp_date', 'x_card_num']
+    DELIMITER = ';'
 
+    # This is how we determine whether or not we allow 'test' as an init param
+    API_URI = {
+        'live' : 'https://secure.authorize.net/gateway/transact.dll',
+        'test' : 'https://test.authorize.net/gateway/transact.dll'
+    }
+
+    # This is how we translate the common Paython fields to Gateway specific fields & do validation
+    REQUEST_FIELDS = {
+        #contact
+        'first_name': {'f_name':'x_first_name', 'required': True},
+        'last_name': {'f_name': 'x_last_name', 'required': True},
+        'email': {'f_name': 'x_email', 'required': True},
+        'phone': {'f_name': 'x_phone', 'required': False},
+        #billing
+        'address': {'f_name': 'x_address', 'required': False},
+        'city': {'f_name': 'x_city', 'required': True},
+        'state': {'f_name': 'x_state', 'required': True},
+        'zipcode': {'f_name': 'x_zip', 'required': True},
+        'country': {'f_name': 'x_country', 'required': False},
+        'ip': {'f_name': 'x_customer_ip', 'required': True},
+        #card
+        'number': {'f_name': 'x_card_num', 'required': True},
+        'exp_date': {'f_name': 'x_exp_date', 'required': True},
+        'verification_value': {'f_name': 'x_card_code', 'required': False},
+        #shipping
+        'ship_first_name': {'f_name': 'x_ship_to_first_name', 'required': False},
+        'ship_last_name': {'f_name': 'x_ship_to_last_name', 'required': False},
+        'ship_to_co': {'f_name': 'x_ship_to_company', 'required': False},
+        'ship_address': {'f_name': 'x_ship_to_address', 'required': False},
+        'ship_city': {'f_name': 'x_ship_to_city', 'required': False},
+        'ship_state': {'f_name': 'x_ship_to_state', 'required': False},
+        'ship_zipcode': {'f_name': 'x_ship_to_zip', 'required': False},
+        'ship_country': {'f_name': 'x_ship_to_country', 'required': False},
+        #transation
+        'amount': {'f_name':'x_amount', 'required': False},
+        'trans_type': {'f_name':'x_type', 'required': False},
+    }
+
+    # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
+    # AVS Responses: A = Address (Street) matches, ZIP does not,  P = AVS not applicable for this transaction,
+    # AVS Responses (cont'd): W = Nine digit ZIP matches, Address (Street) does not, X = Address (Street) and nine digit ZIP match, 
+    # AVS Responses (cont'd): Y = Address (Street) and five digit ZIP match, Z = Five digit ZIP matches, Address (Street) does not
     # response index keys to map the value to its proper dictionary key
-    RESP_DICT_KEYS = {
+    RESPONSE_KEYS = {
         '1':'response_code',
         '3':'response_reason_code',
-        '4':'response_reason_text',
-        '5':'authorization_code',
-        '6':'avs_response',
-        '7':'transaction_id',
+        '4':'response_text',
+        '5':'auth_code',
+        '6':'avs_response', 
+        '7':'trans_id',
         '10':'amount',
-        '12':'transaction_type',
-        '13':'customer_id',
-        '39':'card_code_response',
-        '41':'last_four_of_card',
-        '42':'card_type',
-        '44':'request_amount',
+        '12':'trans_type',
+        '13':'alt_trans_id',
+        '39':'cvv_response',
+        '44':'amount',
     }
 
     debug = False
+    test = False
 
-    def __init__(self, user='test', password='testpassword', debug=False):
-        self.REQUEST_DICT['x_login'] = user
-        self.REQUEST_DICT['x_tran_key'] = password
-        
+    def __init__(self, username='test', password='testpassword', debug=False, test=False, delim=None):
+        """
+        setting up object so we can run 4 different ways (live, debug, test & debug+test)
+        """
+        super(AuthorizeNet, self).set('x_login', username)
+        super(AuthorizeNet, self).set('x_tran_key', password)
+
+        # passing fields to bubble up to Base Class
+        super(AuthorizeNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
+
         if debug:
             self.debug = True
 
-    def auth(self, amount=None, trans_data=None):
+        if test:
+            self.test = True
+
+        if delim:
+            self.DELIMITER = delim
+
+    def charge_setup(self):
+        """
+        standard setup, used for charges
+        """
+        super(AuthorizeNet, self).set('x_delim_data', 'TRUE')
+        if self.debug: 
+            debug_string = " Just set up for a charge "
+            print debug_string.center(80, '=')
+
+    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
         """
         Sends charge for authorization based on amount
         """
-        response_dict = {}
+        #set up transaction
+        self.charge_setup()
 
-        # validation
-        if not amount: response_dict['error'] = 'no amount specified'
+        #setting transaction data
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount']['f_name'], amount)
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type']['f_name'], 'AUTH_ONLY')
 
-        # validation
-        if not all([trans_data.get(key) for key in self.TRANS_DATA_KEYS]): response_dict['error'] = 'missing transaction data'
+        # validating or building up request
+        if not credit_card:
+            if self.debug: 
+                debug_string = " No CreditCard object present. You passed in %s " % (credit_card)
+                print debug_string.center(80, '=')
 
-        # return on error
-        if 'error' in response_dict: return response_dict
-
-        # other wise handle business
-        self.REQUEST_DICT['x_amount'] = amount
-        self.REQUEST_DICT['x_type'] = 'AUTH_ONLY'
-        self.REQUEST_DICT['x_delim_data'] = 'TRUE'
-
-        #updating from trans_data dictionary
-        self.REQUEST_DICT.update(trans_data)
-
-        # build our URL
-        request_query = '?%s' % urllib.urlencode(self.REQUEST_DICT)
-
-        # still building
-        if self.debug:
-            url = self.API_BASE['test']+self.API_URI['transaction'] # here just in case we want to granularly change endpoint
+            raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
-            url = self.API_BASE['transaction']+self.API_URI['transaction'] # here just in case we want to granularly change endpoint
+            super(AuthorizeNet, self).use_credit_card(credit_card)
+
+        if billing_info:
+            super(AuthorizeNet, self).set_billing_info(billing_info)
+
+        if shipping_info:
+            super(AuthorizeNet, self).set_shipping_info(shipping_info)
+
+        # decide which url to use (test|live)
+        if self.test:
+            url = self.API_URI['test'] # here just in case we want to granularly change endpoint
+
+            if self.debug: 
+                debug_string = " You're in test mode (& debug, obviously) "
+                print debug_string.center(80, '=')
+        else:
+            url = self.API_URI['live'] 
 
         # make the request
-        response_dict = self.get(url, request_query)
+        start = time.time() # timing it
 
-        return response_dict
+        if self.debug: 
+            debug_string = " Attempting request to: %s" % (url)
+            print debug_string.center(80, '=')
+            debug_string = "\n With params: %s" % (super(AuthorizeNet, self).query_string())
+            print debug_string
 
-    def settle(self, amount=None, trans_id=None):
+        response = super(AuthorizeNet, self).make_request(url)
+
+        end = time.time() # done timing it
+        response_time = '%0.2f' % (end-start)
+
+        if self.debug: 
+            debug_string = " Request completed in %s seconds " % response_time
+            print debug_string.center(80, '=')
+
+        return self.parse(response, response_time)
+
+    def parse(self, response, response_time):
         """
-        Sends a transaction to settle takes amount to settle on trans_id :) We love this!
+        On Specific Gateway due differences in response from gateway
         """
-        if not trans_id or not amount: return {'error':'no transaction id or amount'}
+        if self.debug: 
+            debug_string = " Raw response: "
+            print debug_string.center(80, '=')
+            debug_string = "\n %s" % response
+            print debug_string
 
-        self.REQUEST_DICT['x_type'] = 'PRIOR_AUTH_CAPTURE'
-        self.REQUEST_DICT['x_delim_data'] = 'TRUE'
-        self.REQUEST_DICT['x_trans_id'] = trans_id
-        self.REQUEST_DICT['x_amount'] = amount
-        
-        # build our URL
-        request_query = '?%s' % urllib.urlencode(self.REQUEST_DICT)
+        response = '%s%s' % (self.DELIMITER, response)
+        response = response.split(self.DELIMITER)
+        approved = True if response[1] == '1' else False
 
-        # still building
-        if self.debug:
-            url = self.API_BASE['test']+self.API_URI['transaction'] # here just in case we want to granularly change endpoint
-        else:
-            url = self.API_BASE['transaction']+self.API_URI['transaction'] # here just in case we want to granularly change endpoint
+        if self.debug: 
+            debug_string = " Response as list: " 
+            print debug_string.center(80, '=')
+            debug_string = '\n%s' % response
+            print debug_string
 
-        # make the request
-        response_dict = self.get(url, request_query)
-
-        return response_dict
-
-    def void(self, amount=None, trans_id=None):
-        """
-        Send a transaction to be voided (in full)
-        """
-        if not trans_id: return {'error':'no transaction id'}
-
-        self.REQUEST_DICT['x_type'] = 'VOID'
-        self.REQUEST_DICT['x_delim_data'] = 'TRUE'
-        self.REQUEST_DICT['x_trans_id'] = trans_id
-
-        # build our URL
-        request_query = '?%s' % urllib.urlencode(self.REQUEST_DICT)
-
-        # still building
-        if self.debug:
-            url = self.API_BASE['test']+self.API_URI['transaction'] # here just in case we want to granularly change endpoint
-        else:
-            url = self.API_BASE['transaction']+self.API_URI['transaction'] # here just in case we want to granularly change endpoint
-
-        # make the request
-        response_dict = self.get(url, request_query)
-
-        return response_dict
-
-    def credit(self, amount=None, trans_id=None, card_num=None):
-        """
-        Send a transaction to be refunded (partially or fully)
-        """
-        #basic validation
-        if not trans_id or not card_num: return {'error':'no transaction id or card number'}
-        
-        self.REQUEST_DICT['x_delim_data'] = 'TRUE'
-        self.REQUEST_DICT['x_type'] = 'CREDIT'
-        self.REQUEST_DICT['x_trans_id'] = trans_id
-        self.REQUEST_DICT['x_card_num'] = card_num
-
-        if amount: #check to see if we should send an amount
-            self.REQUEST_DICT['x_amount'] = amount
-
-        # build our URL
-        request_query = '?%s' % urllib.urlencode(self.REQUEST_DICT)
-
-        # still building
-        if self.debug:
-            url = self.API_BASE['test']+self.API_URI['transaction'] # here just in case we want to granularly change endpoint
-        else:
-            url = self.API_BASE['transaction']+self.API_URI['transaction'] # here just in case we want to granularly change endpoint
-
-        # make the request
-        response_dict = self.get(url, request_query)
-
-        return response_dict
-
-    def get(self, uri, params):
-        """
-        Sends any given request to authorize & returns dictionary of returned values
-        """
-        try:
-            # make le request
-            request = urllib.urlopen('https://%s%s' % (uri, params))
-            response = ';%s' % request.read()
-
-            response = response.split(';')
-
-            new_response = {}
-            i = 0
-            # this is how we create the response dictionary
-            for item in response:
-                ikey = str(i)
-                if ikey in self.RESP_DICT_KEYS:
-                    new_response[self.RESP_DICT_KEYS[ikey]] = item
-                i += 1
-
-            response = new_response
-            # returning the response!
-            return response
-        except:
-            return {'error':'problem at gateway level'}
-
-# REQUEST: 
-# -----------
-# x_type=AUTH_ONLY, CREDIT, PRIOR_AUTH_CAPTURE, VOID
-# x_amount
-# ***
-# x_card_num=13, 16 or last 4 for CREDIT
-# x_exp_date=MM-YY
-# x_card_code
-# ***
-# x_trans_id
-# x_split_tender_id
-# x_auth_code
-# x_delim_data
-# x_delim_char=;
-# x_first_name
-# x_last_name
-# x_zip
-# x_city
-# x_state
-# x_email
-# x_customer_ip
-
-# RESPONSE:
-# -------------
-# 1) Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
-# 3) Response Reason Code
-# 4) Response Reason Text
-# 5) Authorization Code
-# 6) AVS Response: A = Address (Street) matches, ZIP does not, P = AVS not applicable for this transaction, W = Nine digit ZIP matches, Address (Street) does not, X = Address (Street) and nine digit ZIP match, Y = Address (Street) and five digit ZIP match, Z = Five digit ZIP matches, Address (Street) does not
-# 7) Transaction ID: 
-# 10) Amount:
-# 12) Transaction Type:
-# 13) Customer ID: 
-# 39) Card Code Response:
-# 41) Last Four
-# 42) Card Type:
-# 44) Requested Amount:
+        return super(AuthorizeNet, self).standardize(response, self.RESPONSE_KEYS, response_time, approved)

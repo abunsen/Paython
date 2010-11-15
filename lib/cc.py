@@ -1,4 +1,6 @@
-from lib.utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
+from Paython.exceptions import *
+
+from utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
 
 class CreditCard(object):
     def __init__(self, name, number, exp_mo, exp_yr, cvv=None, cc_type=None, strict=False):
@@ -9,7 +11,8 @@ class CreditCard(object):
         self.number = number
         self.exp_month = exp_mo
         self.exp_year = exp_yr
-        self.strict = strict
+        self._strict = strict
+        self.exp_date = get_card_exp(self.exp_month, self.exp_year)
 
         if strict:
             self.verification_value = cvv
@@ -21,15 +24,9 @@ class CreditCard(object):
         """
         for debugging
         """
-        return u'%s, %s, %s, expires: %s' % (self.name, self.card_type, self.safe_num(), self.exp_date)
+        return u'<CreditCard -- %s, %s, %s, expires: %s>' % (self.name, self.card_type, self.safe_num, self.exp_date)
 
     @property
-    def exp_date(self):
-        """
-        uses utils function
-        """
-        return get_card_exp(self.exp_month, self.exp_year)
-
     def safe_num(self):
         """
         outputs the card number with *'s, only exposing last four digits of card number

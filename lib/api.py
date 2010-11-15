@@ -1,9 +1,11 @@
 import httplib
+import urllib
 import xml.dom.minidom
 import base64
 import re
 
 from utils import parse_xml
+from Paython.gateways.core import Gateway
 
 class XMLGateway(object):
     def __init__(self, host, ssl=False, auth=False, debug=False, special_params={}):
@@ -152,8 +154,36 @@ class XMLGateway(object):
 class SOAPGateway(object):
     pass
 
-class GetGateway(object):
-    pass
+class GetGateway(Gateway):
+    REQUEST_DICT = {}
+    debug = False
+
+    def __init__(self, translations, debug):
+        """core GETgateway class"""
+        super(GetGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
+        self.debug = debug
+
+    def set(self, key, value):
+        """
+        Setups request dict for Get
+        """
+        self.REQUEST_DICT[key] = value
+
+    def query_string(self):
+        """
+        Build the query string to use later (in get)
+        """
+        request_query = '?%s' % urllib.urlencode(self.REQUEST_DICT)
+        return request_query
+
+    def make_request(self, uri):
+        """
+        GETs url with params - simple enough... string uri, string params
+        """
+        params = self.query_string()
+        request = urllib.urlopen('%s%s' % (uri, params))
+
+        return request.read()
 
 class PostGateway(object):
     pass

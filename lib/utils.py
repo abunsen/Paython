@@ -4,8 +4,10 @@ import xml.dom.minidom
 
 from datetime import datetime
 
-# for the 'parse_soap()' string type
-from suds.sax.text import Text as sudTypeText
+try:
+    from suds.sax.text import Text as sudTypeText # for the 'parse_soap()' string type
+except:
+    pass
 
 CARD_TYPES = {
     'visa' : '4\d{12}(\d{3})?$',
@@ -106,10 +108,13 @@ def is_valid_exp(month, year):
     """
     Uses datetime to compare string of card expiration to the time right now
     """
-    exp_date_obj = datetime(int(year), int(month), calendar.monthrange(year, month)[1], 23, 59, 59, 59)
-    return datetime.now() > exp_date_obj
+    month = int(month)
+    year = int(year)
+    
+    exp_date_obj = datetime(year, month, calendar.monthrange(year, month)[1], 23, 59, 59, 59)
+    return datetime.now() < exp_date_obj
 
-def check_cvv(cc_cvv):
+def is_valid_cvv(cc_cvv):
     """
     Simple regex for card validator length & type.
     """
@@ -131,5 +136,15 @@ def get_card_exp(month, year):
     """
     return '%s/%s' % (month, year)
 
+def is_valid_email(email):
+    """
+    Based on "The Perfect E-Mail Regex" : http://fightingforalostcause.net/misc/2006/compare-email-regex.php
+    """
+    pat = '^([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$'
+    return re.search(pat, email, re.IGNORECASE)
+
 def transform_keys():
+    raise NotImplemented
+
+def transform_obj():
     raise NotImplemented

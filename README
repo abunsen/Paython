@@ -23,3 +23,36 @@ nosetests -v --with-coverage gateways/*
 Then just:
 
 nosetests -v --with-coverage
+
+When initializing a gateway, debug will output request params, xml & response text or xml. test will use the test gateway endpoint, if there is one & will raise an error otherwise (NoTestEndpointError). 
+
+
+**all gateways should have**
+   ? Can we make a master class that they inherit most of these functions from & just use a dict to translate key names ?
+   I think that master class should have all the generic methods that make a gateway be a gateway, and the master class should be able to generate objects using something like the factory design pattern: http://en.wikipedia.org/wiki/Factory_method_pattern or a modification of it, you'll do something like payment_method = Gateway.new_authorize_net() that way we just import one object.
+   
+     + __init__ (user, [pw, [debug, [test]]])
+     + use_credit_card (CreditCard object)
+     + billing_info (billing address, phone, email)
+     + shipping_info (name, shipping address, phone, email)
+     + charge_setup (static/hardcoded things like: api version, response_format, mode, ssl_options, etc)
+     
+     + auth
+     + settle
+     + capture (currently sale)
+     + void (should be for auths or same day captures only)
+     + credit
+     
+     + return_response (should translate gateway specific response into unified dictionary response)
+
+   **"meta" classes**
+     + PaymentGateway
+       - Exceptions? (What kind should be raised?), just a custom exception for every payment gateway.
+     + XMLGateway
+        - Exceptions? (What kind should be raised?)
+     + SOAPGateway
+        - Exceptions? (What kind should be raised?)
+     + GetGateway
+        - Exceptions? (What kind should be raised?)
+     + PostGateway
+        - Exceptions? (What kind should be raised?)
