@@ -1,10 +1,14 @@
+"""
+authorize_net.py - Authorize.Net gateway interface
+"""
+
 import time
 
-from Paython.exceptions import *
+from Paython.exceptions import MissingDataError
 from Paython.lib.api import GetGateway
 
 class AuthorizeNet(GetGateway):
-    """TODO needs docstring"""
+    """Authorize.Net gateway interface"""
     VERSION = '3.1'
     DELIMITER = ';'
 

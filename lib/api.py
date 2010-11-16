@@ -1,3 +1,7 @@
+"""
+api.py - Core api libraries
+"""
+
 import httplib
 import urllib
 import xml.dom.minidom

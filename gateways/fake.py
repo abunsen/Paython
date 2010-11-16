@@ -1,4 +1,7 @@
-"""fake gateway for paython"""
+"""
+fake.py - test gateway for paython
+"""
+
 import json
 
 from decimal import *

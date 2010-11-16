@@ -1,3 +1,7 @@
+"""
+exceptions.py - Paython's exceptions
+"""
+
 class NoTestEndpointError(Exception):
     """ Errors during importing modules needed """
     def __init__(self, msg):

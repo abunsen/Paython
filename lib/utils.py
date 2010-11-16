@@ -1,3 +1,7 @@
+"""
+utils.py - general utils used, parse xml, credit card generic methods
+"""
+
 import re
 import calendar
 import xml.dom.minidom

@@ -1,3 +1,7 @@
+"""
+innovative_gw.py - InnovativeGW gateway
+"""
+
 import time
 import urlparse
 
@@ -5,7 +9,7 @@ from Paython.exceptions import *
 from Paython.lib.api import PostGateway
 
 class InnovativeGW(PostGateway):
-    """TODO needs docstring"""
+    """Innovative GW gateway"""
     VERSION = 'WebCharge_v5.06'
 
     # This is how we determine whether or not we allow 'test' as an init param

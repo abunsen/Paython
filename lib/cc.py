@@ -1,11 +1,17 @@
-from Paython.exceptions import *
+"""
+cc.py - CreditCard object to pass to gateway to proccess
+"""
 
+from Paython.exceptions import DataValidationError
 from utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
 
 class CreditCard(object):
     def __init__(self, number, exp_mo, exp_yr, first_name=None, last_name=None, full_name=None, cvv=None, cc_type=None, strict=False):
         """
         sets credit card info
+
+        strict: cvv and cc_type required
+        not strict: cc_type is guessed cvv is not required
         """
         if full_name:
             self.full_name = full_name
@@ -26,33 +32,25 @@ class CreditCard(object):
         else:
             self.card_type = get_card_type(self.number)
 
+    def __unicode__(self):
+        """
+        unicode representation of the object
+        """
+        return u'{0.name}, {0.card_type}, {0.safe_num}, {0.exp_date}'.format(self)
+
+    def __str__(self):
+        """
+        string representation of the credit card
+        """
+        return self.__unicode__()
+
     def __repr__(self):
         """
-        for debugging
+        credit card object representation
         """
-        return u'<CreditCard -- %s, %s, %s, expires: %s>' % (self.name, self.card_type, self.safe_num, self.exp_date)
+        return u'<CreditCard -- {0.name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date}>'.format(self)
 
-    @property
-    def safe_num(self):
-        """
-        outputs the card number with *'s, only exposing last four digits of card number
-        """
-        card_length = len(self.number)
-        stars = '*'*(card_length-4)
-        return '%s%s' % (stars, self.number[-4:])
-
-    def is_valid(self):
-        """
-        boolean to see if a card is valid
-        """
-        try:
-            self.validate()
-        except DataValidationError:
-            return False
-        else:
-            return True
-
-    def validate(self):
+    def _validate(self):
         """
         validates expiration date & card number using util functions
         """
@@ -66,4 +64,21 @@ class CreditCard(object):
             if not is_valid_cvv(self.verification_value):
                 raise DataValidationError('The credit card cvv is not valid')
 
+    def is_valid(self):
+        """
+        boolean to see if a card is valid
+        """
+        try:
+            self._validate()
+        except DataValidationError:
+            return False
+
         return True
+
+    @property
+    def safe_num(self):
+        """
+        outputs the card number with *'s, only exposing last four digits of card number
+        """
+        stars = '*' * (len(self.number) - 4)
+        return '{stars}{last_4}'.format(stars=stars, last_4=self.number[-4:])
