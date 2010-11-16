@@ -23,7 +23,7 @@ class Gateway(object):
                 except:
                     pass # it is okay to fail (on exp_month & exp_year)
 
-    def set_billing_info(self, address=None, city=None, state=None, zipcode=None, phone=None, email=None):
+    def set_billing_info(self, address=None, address2=None, city=None, state=None, zipcode=None, country=None, phone=None, email=None):
         """
         Set billing info, as necessary, no required keys. Validates email as well formed.
         """
@@ -31,6 +31,9 @@ class Gateway(object):
 
         if address:
             self.set(self.REQUEST_FIELDS['address'], address)
+
+        if address2:
+            self.set(self.REQUEST_FIELDS['address2'], address2)
 
         if city:
             self.set(self.REQUEST_FIELDS['city'], city)
@@ -41,6 +44,9 @@ class Gateway(object):
         if zipcode:
             self.set(self.REQUEST_FIELDS['zipcode'], zipcode)
 
+        if country:
+            self.set(self.REQUEST_FIELDS['country'], country)
+
         if phone:
             self.set(self.REQUEST_FIELDS['phone'], phone)
 
@@ -50,7 +56,7 @@ class Gateway(object):
             else:
                 raise DataValidationError('The email submitted does not pass regex validation')
 
-    def set_shipping_info(self, ship_first_name, ship_last_name, ship_address, ship_city, ship_state, ship_zipcode, ship_country, ship_to_co=None, ship_phone=None, ship_email=None):
+    def set_shipping_info(self, ship_first_name, ship_last_name, ship_address, ship_city, ship_state, ship_zipcode, ship_country=None, ship_to_co=None, ship_phone=None, ship_email=None):
         """
         Adds shipping info, is standard on all gateways. Does not always use same all provided fields.
         """
@@ -61,10 +67,9 @@ class Gateway(object):
         self.set(self.REQUEST_FIELDS['ship_city'], ship_city)
         self.set(self.REQUEST_FIELDS['ship_state'], ship_state)
         self.set(self.REQUEST_FIELDS['ship_zipcode'], ship_zipcode)
-        self.set(self.REQUEST_FIELDS['ship_country'], ship_country)
 
         # now optional ones
-        optionals = ['ship_to_co', 'ship_phone', 'ship_email'] # using list of strings for reasons spec'd below
+        optionals = ['ship_to_co', 'ship_phone', 'ship_email', 'ship_country'] # using list of strings for reasons spec'd below
 
         #in line comments on this one
         for optional_var in optionals:
@@ -105,7 +110,10 @@ class Gateway(object):
                 i += 1
         else: # dict settings
             for key, value in spec_response.items():
-                self.RESPONSE_FIELDS[field_mapping[key]] = value
+                try:
+                    self.RESPONSE_FIELDS[field_mapping[key]] = value
+                except KeyError:
+                    pass #its okay to fail if we dont have a translation
 
         #send it back!
         return self.RESPONSE_FIELDS

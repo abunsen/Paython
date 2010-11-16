@@ -6,6 +6,7 @@ import re
 
 from utils import parse_xml
 from Paython.gateways.core import Gateway
+from Paython.exceptions import *
 
 class XMLGateway(object):
     def __init__(self, host, ssl=False, auth=False, debug=False, special_params={}):
@@ -180,10 +181,41 @@ class GetGateway(Gateway):
         """
         GETs url with params - simple enough... string uri, string params
         """
-        params = self.query_string()
-        request = urllib.urlopen('%s%s' % (uri, params))
+        try:
+            params = self.query_string()
+            request = urllib.urlopen('%s%s' % (uri, params))
 
-        return request.read()
+            return request.read()
+        except:
+            raise GatewayError('Error making request to gateway')
 
-class PostGateway(object):
-    pass
+class PostGateway(Gateway):
+    REQUEST_DICT = {}
+    debug = False
+
+    def __init__(self, translations, debug):
+        """core POSTgateway class"""
+        super(PostGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
+        self.debug = debug
+
+    def set(self, key, value):
+        """
+        Setups request dict for Post
+        """
+        self.REQUEST_DICT[key] = value
+
+    def params(self):
+        """
+        returns arguments that are going to be sent to the POST (here for debugging)
+        """
+        return urllib.urlencode(self.REQUEST_DICT)
+
+    def make_request(self, uri):
+        """
+        POSTs to url with params (self.REQUEST_DICT) - simple enough... string uri, dict params
+        """
+        try:
+            request = urllib.urlopen(uri, self.params())
+            return request.read()
+        except:
+            raise GatewayError('Error making request to gateway')

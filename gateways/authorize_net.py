@@ -1,6 +1,6 @@
-from Paython.exceptions import *
 import time
 
+from Paython.exceptions import *
 from Paython.lib.api import GetGateway
 
 class AuthorizeNet(GetGateway):
@@ -17,12 +17,14 @@ class AuthorizeNet(GetGateway):
     # This is how we translate the common Paython fields to Gateway specific fields
     REQUEST_FIELDS = {
         #contact
+        'full_name' : None,
         'first_name': 'x_first_name',
         'last_name': 'x_last_name',
         'email': 'x_email',
         'phone': 'x_phone',
         #billing
         'address': 'x_address',
+        'address2': None,
         'city': 'x_city',
         'state': 'x_state', 
         'zipcode': 'x_zip',
@@ -31,12 +33,17 @@ class AuthorizeNet(GetGateway):
         #card
         'number': 'x_card_num',
         'exp_date': 'x_exp_date',
+        'exp_month': None,
+        'exp_year': None,
         'verification_value': 'x_card_code',
+        'card_type': None,
         #shipping
+        'ship_full_name': None,
         'ship_first_name': 'x_ship_to_first_name',
         'ship_last_name': 'x_ship_to_last_name',
         'ship_to_co': 'x_ship_to_company',
         'ship_address': 'x_ship_to_address',
+        'ship_address2': None,
         'ship_city': 'x_ship_to_city',
         'ship_state': 'x_ship_to_state',
         'ship_zipcode': 'x_ship_to_zip',
@@ -45,6 +52,7 @@ class AuthorizeNet(GetGateway):
         'amount': 'x_amount',
         'trans_type': 'x_type',
         'trans_id': 'x_trans_id',
+        'alt_trans_id': None,
     }
 
     # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
@@ -64,6 +72,7 @@ class AuthorizeNet(GetGateway):
         '12':'alt_trans_id',
         '38':'cvv_response',
         '43':'amount',
+        #'n/a':'alt_trans_id2', <-- third way of id'ing a transaction
     }
 
     debug = False
@@ -161,7 +170,7 @@ class AuthorizeNet(GetGateway):
         # validating or building up request
         if not credit_card:
             if self.debug: 
-                debug_string = "paython.gateways.authorize_net.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
+                debug_string = "paython.gateways.authorize_net.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
                 print debug_string
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
