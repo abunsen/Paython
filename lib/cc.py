@@ -3,11 +3,12 @@ from Paython.exceptions import *
 from utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
 
 class CreditCard(object):
-    def __init__(self, name, number, exp_mo, exp_yr, cvv=None, cc_type=None, strict=False):
+    def __init__(self, first_name, last_name, number, exp_mo, exp_yr, cvv=None, cc_type=None, strict=False):
         """
         sets credit card info
         """
-        self.name = name
+        self.first_name = first_name
+        self.last_name = last_name
         self.number = number
         self.exp_month = exp_mo
         self.exp_year = exp_yr

@@ -1,2 +1,2 @@
-from gateways import *
+import gateways
 from lib import *

@@ -19,7 +19,7 @@ class Gateway(object):
         for key, value in credit_card.__dict__.items():
             if not key.startswith('_'):
                 try:
-                    self.set(self.REQUEST_FIELDS[key]['f_name'], value)
+                    self.set(self.REQUEST_FIELDS[key], value)
                 except:
                     pass # it is okay to fail (on exp_month & exp_year)
 
@@ -30,20 +30,23 @@ class Gateway(object):
         from Paython.lib.utils import is_valid_email
 
         if address:
-            self.set(self.REQUEST_FIELDS['address']['f_name'], address)
+            self.set(self.REQUEST_FIELDS['address'], address)
 
         if city:
-            self.set(self.REQUEST_FIELDS['city']['f_name'], city)
+            self.set(self.REQUEST_FIELDS['city'], city)
+
+        if state:
+            self.set(self.REQUEST_FIELDS['state'], state)
 
         if zipcode:
-            self.set(self.REQUEST_FIELDS['zipcode']['f_name'], zipcode)
+            self.set(self.REQUEST_FIELDS['zipcode'], zipcode)
 
         if phone:
-            self.set(self.REQUEST_FIELDS['phone']['f_name'], phone)
+            self.set(self.REQUEST_FIELDS['phone'], phone)
 
         if email:
             if is_valid_email(email):
-                self.set(self.REQUEST_FIELDS['phone']['f_name'], email)
+                self.set(self.REQUEST_FIELDS['email'], email)
             else:
                 raise DataValidationError('The email submitted does not pass regex validation')
 
@@ -52,13 +55,13 @@ class Gateway(object):
         Adds shipping info, is standard on all gateways. Does not always use same all provided fields.
         """
         # setting all shipping variables
-        self.set(self.REQUEST_FIELDS['ship_first_name']['f_name'], ship_first_name)
-        self.set(self.REQUEST_FIELDS['ship_last_name']['f_name'], ship_last_name)
-        self.set(self.REQUEST_FIELDS['ship_address']['f_name'], ship_address)
-        self.set(self.REQUEST_FIELDS['ship_city']['f_name'], ship_city)
-        self.set(self.REQUEST_FIELDS['ship_state']['f_name'], ship_state)
-        self.set(self.REQUEST_FIELDS['ship_zipcode']['f_name'], ship_zipcode)
-        self.set(self.REQUEST_FIELDS['ship_country']['f_name'], ship_country)
+        self.set(self.REQUEST_FIELDS['ship_first_name'], ship_first_name)
+        self.set(self.REQUEST_FIELDS['ship_last_name'], ship_last_name)
+        self.set(self.REQUEST_FIELDS['ship_address'], ship_address)
+        self.set(self.REQUEST_FIELDS['ship_city'], ship_city)
+        self.set(self.REQUEST_FIELDS['ship_state'], ship_state)
+        self.set(self.REQUEST_FIELDS['ship_zipcode'], ship_zipcode)
+        self.set(self.REQUEST_FIELDS['ship_country'], ship_country)
 
         # now optional ones
         optionals = ['ship_to_co', 'ship_phone', 'ship_email'] # using list of strings for reasons spec'd below
@@ -72,7 +75,7 @@ class Gateway(object):
                     raise MissingTranslationError('Gateway doesn\'t support the \"%s\" field for shipping' % optional_var)
 
                 # set it on the gateway level if we are able to get this far
-                self.set(self.REQUEST_FIELDS['ship_to_co']['f_name'], ship_to_co)
+                self.set(self.REQUEST_FIELDS['ship_to_co'], ship_to_co)
 
     def standardize(self, spec_response, field_mapping, response_time, approved):
         """
@@ -86,8 +89,14 @@ class Gateway(object):
         if isinstance(spec_response, list): # list settings
             i = 0
             if self.debug:
-                print 'response: %s' % spec_response
-                print 'field mapping: %s' % field_mapping
+                debug_string = 'paython.gateways.core.standardize() -- spec_response: '
+                print debug_string.center(80, '=')
+                debug_string = '\n%s' % spec_response
+                print debug_string
+                debug_string = 'paython.gateways.core.standardize() -- field_mapping: '
+                print debug_string.center(80, '=')
+                debug_string = '\n%s' % field_mapping
+                print debug_string
 
             for item in spec_response:
                 iteration_key = str(i) #stringifying because the field_mapping keys are strings

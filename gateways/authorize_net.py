@@ -14,36 +14,37 @@ class AuthorizeNet(GetGateway):
         'test' : 'https://test.authorize.net/gateway/transact.dll'
     }
 
-    # This is how we translate the common Paython fields to Gateway specific fields & do validation
+    # This is how we translate the common Paython fields to Gateway specific fields
     REQUEST_FIELDS = {
         #contact
-        'first_name': {'f_name':'x_first_name', 'required': True},
-        'last_name': {'f_name': 'x_last_name', 'required': True},
-        'email': {'f_name': 'x_email', 'required': True},
-        'phone': {'f_name': 'x_phone', 'required': False},
+        'first_name': 'x_first_name',
+        'last_name': 'x_last_name',
+        'email': 'x_email',
+        'phone': 'x_phone',
         #billing
-        'address': {'f_name': 'x_address', 'required': False},
-        'city': {'f_name': 'x_city', 'required': True},
-        'state': {'f_name': 'x_state', 'required': True},
-        'zipcode': {'f_name': 'x_zip', 'required': True},
-        'country': {'f_name': 'x_country', 'required': False},
-        'ip': {'f_name': 'x_customer_ip', 'required': True},
+        'address': 'x_address',
+        'city': 'x_city',
+        'state': 'x_state', 
+        'zipcode': 'x_zip',
+        'country': 'x_country',
+        'ip': 'x_customer_ip',
         #card
-        'number': {'f_name': 'x_card_num', 'required': True},
-        'exp_date': {'f_name': 'x_exp_date', 'required': True},
-        'verification_value': {'f_name': 'x_card_code', 'required': False},
+        'number': 'x_card_num',
+        'exp_date': 'x_exp_date',
+        'verification_value': 'x_card_code',
         #shipping
-        'ship_first_name': {'f_name': 'x_ship_to_first_name', 'required': False},
-        'ship_last_name': {'f_name': 'x_ship_to_last_name', 'required': False},
-        'ship_to_co': {'f_name': 'x_ship_to_company', 'required': False},
-        'ship_address': {'f_name': 'x_ship_to_address', 'required': False},
-        'ship_city': {'f_name': 'x_ship_to_city', 'required': False},
-        'ship_state': {'f_name': 'x_ship_to_state', 'required': False},
-        'ship_zipcode': {'f_name': 'x_ship_to_zip', 'required': False},
-        'ship_country': {'f_name': 'x_ship_to_country', 'required': False},
+        'ship_first_name': 'x_ship_to_first_name',
+        'ship_last_name': 'x_ship_to_last_name',
+        'ship_to_co': 'x_ship_to_company',
+        'ship_address': 'x_ship_to_address',
+        'ship_city': 'x_ship_to_city',
+        'ship_state': 'x_ship_to_state',
+        'ship_zipcode': 'x_ship_to_zip',
+        'ship_country': 'x_ship_to_country',
         #transation
-        'amount': {'f_name':'x_amount', 'required': False},
-        'trans_type': {'f_name':'x_type', 'required': False},
+        'amount': 'x_amount',
+        'trans_type': 'x_type',
+        'trans_id': 'x_trans_id',
     }
 
     # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
@@ -52,17 +53,17 @@ class AuthorizeNet(GetGateway):
     # AVS Responses (cont'd): Y = Address (Street) and five digit ZIP match, Z = Five digit ZIP matches, Address (Street) does not
     # response index keys to map the value to its proper dictionary key
     RESPONSE_KEYS = {
-        '1':'response_code',
-        '3':'response_reason_code',
-        '4':'response_text',
-        '5':'auth_code',
-        '6':'avs_response', 
-        '7':'trans_id',
-        '10':'amount',
-        '12':'trans_type',
-        '13':'alt_trans_id',
-        '39':'cvv_response',
-        '44':'amount',
+        '0':'response_code',
+        '2':'response_reason_code',
+        '3':'response_text',
+        '4':'auth_code',
+        '5':'avs_response', 
+        '6':'trans_id',
+        '9':'amount',
+        '11':'trans_type',
+        '12':'alt_trans_id',
+        '38':'cvv_response',
+        '43':'amount',
     }
 
     debug = False
@@ -83,6 +84,9 @@ class AuthorizeNet(GetGateway):
 
         if test:
             self.test = True
+            if self.debug: 
+                debug_string = " paython.gateways.authorize_net.__init__() -- You're in test mode (& debug, obviously) "
+                print debug_string.center(80, '=')
 
         if delim:
             self.DELIMITER = delim
@@ -93,7 +97,7 @@ class AuthorizeNet(GetGateway):
         """
         super(AuthorizeNet, self).set('x_delim_data', 'TRUE')
         if self.debug: 
-            debug_string = " Just set up for a charge "
+            debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
             print debug_string.center(80, '=')
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
@@ -101,74 +105,157 @@ class AuthorizeNet(GetGateway):
         Sends charge for authorization based on amount
         """
         #set up transaction
-        self.charge_setup()
+        self.charge_setup() # considering turning this into a decorator?
 
         #setting transaction data
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount']['f_name'], amount)
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type']['f_name'], 'AUTH_ONLY')
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
 
         # validating or building up request
         if not credit_card:
             if self.debug: 
-                debug_string = " No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string.center(80, '=')
+                debug_string = "paython.gateways.authorize_net.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
+                print debug_string
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
             super(AuthorizeNet, self).use_credit_card(credit_card)
 
         if billing_info:
-            super(AuthorizeNet, self).set_billing_info(billing_info)
+            super(AuthorizeNet, self).set_billing_info(**billing_info)
 
         if shipping_info:
-            super(AuthorizeNet, self).set_shipping_info(shipping_info)
+            super(AuthorizeNet, self).set_shipping_info(**shipping_info)
 
+        # send transaction to gateway!
+        response, response_time = self.request()
+        return self.parse(response, response_time)
+
+    def settle(self, amount, trans_id):
+        """
+        Sends prior authorization to be settled based on amount & trans_id PRIOR_AUTH_CAPTURE
+        """
+        #set up transaction
+        self.charge_setup() # considering turning this into a decorator?
+
+        #setting transaction data
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'PRIOR_AUTH_CAPTURE')
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+
+        # send transaction to gateway!
+        response, response_time = self.request()
+        return self.parse(response, response_time)
+
+    def capture(self, amount, credit_card=None, billing_info=None, shipping_info=None):
+        """
+        Sends transaction for capture (same day settlement) based on amount.
+        """
+        #set up transaction
+        self.charge_setup() # considering turning this into a decorator?
+
+        #setting transaction data
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_CAPTURE')
+
+        # validating or building up request
+        if not credit_card:
+            if self.debug: 
+                debug_string = "paython.gateways.authorize_net.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
+                print debug_string
+
+            raise MissingDataError('You did not pass a CreditCard object into the auth method')
+        else:
+            super(AuthorizeNet, self).use_credit_card(credit_card)
+
+        if billing_info:
+            super(AuthorizeNet, self).set_billing_info(**billing_info)
+
+        if shipping_info:
+            super(AuthorizeNet, self).set_shipping_info(**shipping_info)
+
+        # send transaction to gateway!
+        response, response_time = self.request()
+        return self.parse(response, response_time)
+
+    def void(self, trans_id):
+        """
+        Sends a transaction to be voided (in full)
+        """
+        #set up transaction
+        self.charge_setup() # considering turning this into a decorator?
+
+        #setting transaction data
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'VOID')
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+
+        # send transaction to gateway!
+        response, response_time = self.request()
+        return self.parse(response, response_time)
+
+    def credit(self, amount, trans_id, credit_card):
+        """
+        Sends a transaction to be refunded (partially or fully)
+        """
+        #set up transaction
+        self.charge_setup() # considering turning this into a decorator?
+
+        #setting transaction data
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'CREDIT')
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['number'], credit_card.number)
+
+        if amount: #check to see if we should send an amount
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
+
+        # send transaction to gateway!
+        response, response_time = self.request()
+        return self.parse(response, response_time)
+
+    def request(self):
+        """
+        Makes a request using lib.api.GetGateway.make_request() & move some debugging away from other methods.
+        """
         # decide which url to use (test|live)
         if self.test:
             url = self.API_URI['test'] # here just in case we want to granularly change endpoint
-
-            if self.debug: 
-                debug_string = " You're in test mode (& debug, obviously) "
-                print debug_string.center(80, '=')
         else:
             url = self.API_URI['live'] 
 
-        # make the request
-        start = time.time() # timing it
-
-        if self.debug: 
-            debug_string = " Attempting request to: %s" % (url)
+        if self.debug:  # I wish I could hide debugging
+            debug_string = " paython.gateways.authorize_net.request() -- Attempting request to: "
             print debug_string.center(80, '=')
-            debug_string = "\n With params: %s" % (super(AuthorizeNet, self).query_string())
+            debug_string = "\n %s with params: %s" % (url, super(AuthorizeNet, self).query_string())
             print debug_string
 
+        # make the request
+        start = time.time() # timing it
         response = super(AuthorizeNet, self).make_request(url)
-
         end = time.time() # done timing it
         response_time = '%0.2f' % (end-start)
 
-        if self.debug: 
-            debug_string = " Request completed in %s seconds " % response_time
+        if self.debug: # debugging makes code look so nasty
+            debug_string = " paython.gateways.authorize_net.request()  -- Request completed in %ss " % response_time
             print debug_string.center(80, '=')
 
-        return self.parse(response, response_time)
+        return response, response_time
 
     def parse(self, response, response_time):
         """
         On Specific Gateway due differences in response from gateway
         """
-        if self.debug: 
-            debug_string = " Raw response: "
+        if self.debug: # debugging is so gross
+            debug_string = " paython.gateways.authorize_net.parse() -- Raw response: "
             print debug_string.center(80, '=')
             debug_string = "\n %s" % response
             print debug_string
 
-        response = '%s%s' % (self.DELIMITER, response)
+        #splitting up response into a list so we can map it to Paython generic response
         response = response.split(self.DELIMITER)
-        approved = True if response[1] == '1' else False
+        approved = True if response[0] == '1' else False
 
-        if self.debug: 
-            debug_string = " Response as list: " 
+        if self.debug: # :& gonna puke
+            debug_string = " paython.gateways.authorize_net.parse() -- Response as list: " 
             print debug_string.center(80, '=')
             debug_string = '\n%s' % response
             print debug_string
