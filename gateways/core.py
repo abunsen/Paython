@@ -16,6 +16,9 @@ class Gateway(object):
         """
         Set up credit card info use (if necessary for transaction)
         """
+        if '_exp_yr_style' in credit_card.__dict__: # here for gateways that like 2 digit expiration years
+            credit_card.exp_year = credit_card.exp_year[-2:]
+
         for key, value in credit_card.__dict__.items():
             if not key.startswith('_'):
                 try:

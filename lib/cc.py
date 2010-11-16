@@ -12,25 +12,23 @@ class CreditCard(object):
         else:
             self.first_name = first_name
             self.last_name = last_name
+            self.full_name = '%s %s' % (self.first_name, self.last_name)
 
         #everything else
         self.number = number
         self.exp_month = exp_mo
         self.exp_year = exp_yr
-        self._strict = strict
         self.exp_date = get_card_exp(self.exp_month, self.exp_year)
+        self.card_type = get_card_type(self.number)
 
-        if strict:
+        if cvv:
             self.verification_value = cvv
-            self.card_type = cc_type
-        else:
-            self.card_type = get_card_type(self.number)
 
     def __repr__(self):
         """
         for debugging
         """
-        return u'<CreditCard -- %s, %s, %s, expires: %s>' % (self.name, self.card_type, self.safe_num, self.exp_date)
+        return u'<CreditCard -- %s, %s, %s, expires: %s --extra: %s>' % (self.full_name, self.card_type, self.safe_num, self.exp_date, self._exp_yr_style)
 
     @property
     def safe_num(self):

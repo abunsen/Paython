@@ -14,6 +14,7 @@ class InnovativeGW(PostGateway):
     }
 
     # This is how we translate the common Paython fields to Gateway specific fields
+    # it goes like this: 'paython_key' ==> 'gateway_specific_parameter'
     REQUEST_FIELDS = {
         #contact
         'full_name': 'ccname',
@@ -62,6 +63,7 @@ class InnovativeGW(PostGateway):
     # AVS Responses (cont'd): S = Service not supported. U = Address information unavailable. E = Data not available/error invalid. 
     # AVS Responses (cont'd): G = Non-US card issuer that does not participate in AVS
     # response index keys to map the value to its proper dictionary key
+    # it goes like this: 'gateway_specific_parameter' ==> 'paython_key'
     RESPONSE_KEYS = {
         'error':'response_text',
         'messageid':'auth_code',
@@ -80,9 +82,9 @@ class InnovativeGW(PostGateway):
     debug = False
     test = False
 
-    def __init__(self, username='gatewaytest', password='GateTest2002', debug=False, test=False):
+    def __init__(self, username='gatewaytest', password='GateTest2002', debug=False):
         """
-        setting up object so we can run 4 different ways (live, debug, test & debug+test)
+        setting up object so we can run 3 different ways (live, debug, live+debug no test endpoint available)
         """
         super(InnovativeGW, self).set('username', username)
         super(InnovativeGW, self).set('pw', password)
@@ -92,12 +94,6 @@ class InnovativeGW(PostGateway):
 
         if debug:
             self.debug = True
-
-        if test:
-            self.test = True
-            if self.debug: 
-                debug_string = " paython.gateways.innovative_gw.__init__() -- You're in test mode (& debug, obviously) "
-                print debug_string.center(80, '=')
 
     def charge_setup(self):
         """

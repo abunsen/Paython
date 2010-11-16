@@ -8,26 +8,20 @@ from utils import parse_xml
 from Paython.gateways.core import Gateway
 from Paython.exceptions import *
 
-class XMLGateway(object):
-    def __init__(self, host, ssl=False, auth=False, debug=False, special_params={}):
+class XMLGateway(Gateway):
+    def __init__(self, host, translations, debug=False, special_params={}):
         """ initalize API call session
 
         host: hostname (apigateway.tld)
-        ssl: True/False
         auth: accept a tuple with (username,password)
         debug: True/False
         """
         self.doc = xml.dom.minidom.Document()
         self.api_host = host
-        self.api_ssl = ssl
-        self.api_auth = auth
         self.debug = debug
         self.parse_xml = parse_xml
         self.special_ssl = special_params
-
-    def reset(self):
-        """ Resets the current API session """
-        self.doc = xml.dom.minidom.Document()
+        super(XMLGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
 
     def set(self, path, child=False, attribute=False):
         """ Accepts a forward slash seperated path of XML elements to traverse and create if non existent.
@@ -87,32 +81,25 @@ class XMLGateway(object):
                 attribute = attribute.split(':')
                 xml_doc.setAttribute(attribute[0], attribute[1])
 
-    def query(self, path, child=False, attribute=False):
-        """ Helper for single command API calls - returns the result right away and handles session reset """
-        self.reset()
-        self.set(path, child, attribute)
-        resp = self.post()
-        self.reset()
-        return resp
+    def request_xml(self):
+        """
+        Stringifies request xml for debugging
+        """
+        return self.doc.toprettyxml()
 
-
-    def post(self, api_uri):
-        """ Submits the API request as XML formated string via HTTP POST and parse gateway response.
-        This needs to be run after adding some data via `set` or automatically via `query`
+    def make_request(self, api_uri):
+        """ 
+        Submits the API request as XML formated string via HTTP POST and parse gateway response.
+        This needs to be run after adding some data via 'set'
         """
         request_body = self.doc.toxml('utf-8')
 
-        if self.debug:
-            print 'Connecting to %s/%s' % (self.api_host, api_uri)
-
-        if self.api_ssl:
-            if self.special_ssl:
-                kwargs = self.special_ssl
-                api = httplib.HTTPSConnection(self.api_host, **kwargs)
-            else:
-                api = httplib.HTTPSConnection(self.api_host)
+        # checking to see if we have any special params
+        if self.special_ssl:
+            kwargs = self.special_ssl
+            api = httplib.HTTPSConnection(self.api_host, **kwargs)
         else:
-            api = httplib.HTTPConnection(self.api_host)
+            api = httplib.HTTPSConnection(self.api_host)
 
         api.connect()
         api.putrequest('POST', api_uri, skip_host=True)
@@ -126,16 +113,9 @@ class XMLGateway(object):
         resp = api.getresponse()
         resp_data = resp.read()
 
-        # debug request 
-        if self.debug:
-            print '*** REQUEST:\n%s' % self.doc.toprettyxml()
-
         # parse API call response
         if not resp.status == 200:
             raise RequestError('Gateway returned %i status' % resp.status)
-            #debugging
-            if self.debug:
-                print 'Full response text: %s' % resp_data
 
         # parse XML response and return as dict
         try:
@@ -145,10 +125,6 @@ class XMLGateway(object):
                 resp_dict = self.parse_xml('<?xml version="1.0"?><response>%s</response>' % resp_data)
             except:
                 raise RequestError('Could not parse XML into JSON')
-
-        # optional debug output
-        if self.debug:
-            print '*** RESPONSE:\n%s' % resp_data
 
         return resp_dict
 
