@@ -18,19 +18,17 @@ class CreditCard(object):
         else:
             self.first_name = first_name
             self.last_name = last_name
+            self.full_name = '%s %s' % (self.first_name, self.last_name)
 
         #everything else
         self.number = number
         self.exp_month = exp_mo
         self.exp_year = exp_yr
-        self._strict = strict
         self.exp_date = get_card_exp(self.exp_month, self.exp_year)
+        self.card_type = get_card_type(self.number)
 
-        if strict:
+        if cvv:
             self.verification_value = cvv
-            self.card_type = cc_type
-        else:
-            self.card_type = get_card_type(self.number)
 
     def __unicode__(self):
         """
@@ -48,7 +46,7 @@ class CreditCard(object):
         """
         credit card object representation
         """
-        return u'<CreditCard -- {0.name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date}>'.format(self)
+        return u'<CreditCard -- {0.name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date} --extra: {0._exp_yr_style}>'.format(self)
 
     def _validate(self):
         """
