@@ -105,6 +105,7 @@ class AuthorizeNet(GetGateway):
         standard setup, used for charges
         """
         super(AuthorizeNet, self).set('x_delim_data', 'TRUE')
+        super(AuthorizeNet, self).set('x_version', self.VERSION)
         if self.debug: 
             debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
             print debug_string.center(80, '=')
