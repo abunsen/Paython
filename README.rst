@@ -15,16 +15,18 @@ Supported Gateways
 Install Requirements
 ===========================
 
+You need pip::
+
     pip install -r requirements.txt
 
 Run Tests
 =========
 
-First run:
+First run::
 
     nosetests -v --with-coverage gateways/*
 
-Then just:
+Then just::
 
     nosetests -v --with-coverage
 
