@@ -15,17 +15,17 @@ Supported Gateways
 Install Requirements
 ===========================
 
-pip install -r requirements.txt
+    pip install -r requirements.txt
 
 Run Tests
 =========
 
 First run:
 
-nosetests -v --with-coverage gateways/*
+    nosetests -v --with-coverage gateways/*
 
 Then just:
 
-nosetests -v --with-coverage
+    nosetests -v --with-coverage
 
 When initializing a gateway, debug will output request params, xml & response text or xml. test will use the test gateway endpoint, if there is one & will raise an error otherwise (NoTestEndpointError). 
