@@ -1,7 +1,7 @@
 import time
 
-from Paython.exceptions import *
-from Paython.lib.api import GetGateway
+from paython.exceptions import *
+from paython.lib.api import GetGateway
 
 class AuthorizeNet(GetGateway):
     """TODO needs docstring"""
