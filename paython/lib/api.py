@@ -5,8 +5,8 @@ import base64
 import re
 
 from utils import parse_xml
-from Paython.gateways.core import Gateway
-from Paython.exceptions import *
+from paython.gateways.core import Gateway
+from paython.exceptions import RequestError, GatewayError
 
 class XMLGateway(Gateway):
     def __init__(self, host, translations, debug=False, special_params={}):
