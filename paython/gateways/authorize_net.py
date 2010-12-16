@@ -1,6 +1,6 @@
 import time
 
-from paython.exceptions import *
+from paython.exceptions import MissingDataError
 from paython.lib.api import GetGateway
 
 class AuthorizeNet(GetGateway):

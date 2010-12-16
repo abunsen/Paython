@@ -2,7 +2,7 @@ import re
 import time
 import urlparse
 
-from paython.exceptions import *
+from paython.exceptions import DataValidationError, MissingDataError
 from paython.lib.api import XMLGateway
 
 class FirstDataLegacy(XMLGateway):

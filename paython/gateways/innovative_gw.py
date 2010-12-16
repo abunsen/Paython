@@ -1,7 +1,7 @@
 import time
 import urlparse
 
-from paython.exceptions import *
+from paython.exceptions import MissingDataError
 from paython.lib.api import PostGateway
 
 class InnovativeGW(PostGateway):

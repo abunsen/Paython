@@ -3,10 +3,9 @@ import calendar
 import xml
 
 from datetime import datetime
-
 from suds.sax.text import Text as sudTypeText # for the 'parse_soap()' string type
 
-from paython.exeptions import GatewayError
+from paython.exceptions import GatewayError
 
 CARD_TYPES = {
     'visa': r'4\d{12}(\d{3})?$',

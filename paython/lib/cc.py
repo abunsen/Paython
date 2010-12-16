@@ -1,6 +1,6 @@
 from paython.exceptions import DataValidationError
 
-from utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
+from paython.lib.utils import get_card_type, get_card_exp, is_valid_exp, is_valid_cc, is_valid_cvv
 
 class CreditCard(object):
     """
@@ -26,6 +26,8 @@ class CreditCard(object):
 
         if cvv:
             self.verification_value = cvv
+
+        self.strict = strict
 
     def __repr__(self):
         """
