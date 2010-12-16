@@ -14,7 +14,7 @@ setup(
     author = "Auston Bunsen, Igor Guerrero",
     author_email = "auston.bunsen@gmail.com",
     description = ("Trying to make it easy to accept payments in Python."),
-    license = "BSD",
+    license = "MIT",
     keywords = "payments gateways creditcards processing",
     url = "https://github.com/abunsen/Paython",
     packages=find_packages(),
@@ -32,6 +32,6 @@ setup(
         "Operating System :: POSIX",
         "Programming Language :: Python :: 2.6",
         "Topic :: Office/Business :: Financial",
-        "License :: OSI Approved :: BSD License",
+        "License :: OSI Approved :: MIT License",
     ],
 )
