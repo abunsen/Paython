@@ -1,5 +1,6 @@
-from paython.billing import CreditCard, LuhnValidationError
-from paython.gateways import FakeGateway
+from Paython.exceptions import DataValidationError
+from Paython.lib.cc import CreditCard
+from Paython.gateways import FakeGateway
 
 from nose.tools import assert_equals, assert_false, with_setup, raises
 
@@ -18,7 +19,7 @@ def teardown():
     del fake_gateway
 
 @with_setup(setup, teardown)
-@raises(LuhnValidationError)
+@raises(DataValidationError)
 def test_luhn_invalid():
     """test if a credit card number is luhn invalid"""
     credit_card = CreditCard()
