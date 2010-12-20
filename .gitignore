@@ -5,3 +5,6 @@
 *.log
 *.swp
 *.swo
+build
+dist
+paython.egg-info

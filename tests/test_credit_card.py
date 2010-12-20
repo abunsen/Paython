@@ -1,54 +1,62 @@
-from Paython.exceptions import DataValidationError
-from Paython.lib.cc import CreditCard
-from Paython.gateways import FakeGateway
+from paython.lib.cc import CreditCard
+from paython.exceptions import DataValidationError
 
-from nose.tools import assert_equals, assert_false, with_setup, raises
+
+from nose.tools import assert_equals, assert_false, assert_true, with_setup, raises
 
 def setup():
     """setting up the test"""
-    global fake_gateway
-
-    # fake gateway to fake payments
-    # (our local shit, basically a mock object, e.g.
-    # accepts just valid cc and doesn't make any http requests
-    fake_gateway = FakeGateway() # doesn't need username + password
+    global test_cards
+    test_cards = {
+            'visa': "4111111111111111",
+            'amex': "378282246310005",
+            'mc': "5555555555554444",
+            'discover': "6011111111111117",
+            'diners': "30569309025904"
+    }
 
 def teardown():
     """teardowning the test"""
-    # delete the fake gateway object
-    del fake_gateway
+    pass
 
 @with_setup(setup, teardown)
 @raises(DataValidationError)
-def test_luhn_invalid():
+
+def test_invalid():
     """test if a credit card number is luhn invalid"""
-    credit_card = CreditCard()
-    credit_card.number = "4111111111111113" # invalid credit card
-    credit_card.exp = "12/99"
-    credit_card.cvv = "123"
+    credit_card = CreditCard(
+            number = "4111111111111113", # invalid credit card
+            exp_mo = "12",
+            exp_yr = "2019",
+            first_name = "John",
+            last_name = "Doe",
+            cvv = "123",
+            strict = False
+    )
+
+    # checking if the exception fires
+    credit_card.validate()
 
     # safe check for luhn valid
-    assert_false(credit_card.is_luhn_valid())
-
-    # unsafe check for luhn valid, will bomb an exception
-    amount = Decimal("10.10")
-    fake_gateway.auth(amount, credit_card)
+    assert_false(credit_card.is_valid())
 
 @with_setup(setup, teardown)
-def test_luhn_valid():
+def test_valid():
     """test if a credit card number is luhn valid"""
-    # create a credit card object
-    credit_card = CreditCard()
-    credit_card.number = "4111111111111111" # valid VISA credit card
-    credit_card.exp = "12/99"
-    credit_card.cvv = "123"
+    for test_cc_type, test_cc_num in test_cards.items():
+        # create a credit card object
+        credit_card = CreditCard(
+                number = test_cc_num, # invalid credit card
+                exp_mo = "12",
+                exp_yr = "2019",
+                first_name = "John",
+                last_name = "Doe",
+                cvv = "123",
+                strict = False
+        )
 
-    # safe check for luhn valid
-    assert_false(credit_card.is_luhn_valid())
+        # safe check
+        assert_true(credit_card.is_valid())
 
-    # check if the credit card is 'visa', this is just double checking
-    assert_equals('visa', credit_card.type)
-
-    # should work
-    amount = Decimal("10.00")
-    fake_gateway.auth(amount, credit_card)
+        # check the type
+        assert_equals(test_cc_type, credit_card.card_type)

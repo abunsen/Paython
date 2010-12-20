@@ -1,8 +1,8 @@
 import time
 import urlparse
 
-from Paython.exceptions import *
-from Paython.lib.api import PostGateway
+from paython.exceptions import MissingDataError
+from paython.lib.api import PostGateway
 
 class InnovativeGW(PostGateway):
     """TODO needs docstring"""

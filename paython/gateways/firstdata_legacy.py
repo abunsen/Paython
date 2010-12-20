@@ -2,11 +2,11 @@ import re
 import time
 import urlparse
 
-from Paython.exceptions import *
-from Paython.lib.api import XMLGateway
+from paython.exceptions import DataValidationError, MissingDataError
+from paython.lib.api import XMLGateway
 
 class FirstDataLegacy(XMLGateway):
-    """TODO needs docstring"""
+    """First data legacy support"""
 
     # This is how we determine whether or not we allow 'test' as an init param
     API_URI = {

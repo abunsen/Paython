@@ -1,4 +1,6 @@
-from decimal import *
+"""core.py - Paython's core libraries"""
+
+from paython.lib.utils import is_valid_email
 
 class Gateway(object):
     """base gateway class"""
@@ -30,8 +32,6 @@ class Gateway(object):
         """
         Set billing info, as necessary, no required keys. Validates email as well formed.
         """
-        from Paython.lib.utils import is_valid_email
-
         if address:
             self.set(self.REQUEST_FIELDS['address'], address)
 

@@ -1,7 +1,7 @@
 import time
 
-from Paython.exceptions import *
-from Paython.lib.api import GetGateway
+from paython.exceptions import MissingDataError
+from paython.lib.api import GetGateway
 
 class AuthorizeNet(GetGateway):
     """TODO needs docstring"""
@@ -105,6 +105,7 @@ class AuthorizeNet(GetGateway):
         standard setup, used for charges
         """
         super(AuthorizeNet, self).set('x_delim_data', 'TRUE')
+        super(AuthorizeNet, self).set('x_delim_char', self.DELIMITER)
         super(AuthorizeNet, self).set('x_version', self.VERSION)
         if self.debug: 
             debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "

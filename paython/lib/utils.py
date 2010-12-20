@@ -1,20 +1,18 @@
 import re
 import calendar
-import xml.dom.minidom
+import xml
 
 from datetime import datetime
+from suds.sax.text import Text as sudTypeText # for the 'parse_soap()' string type
 
-try:
-    from suds.sax.text import Text as sudTypeText # for the 'parse_soap()' string type
-except:
-    pass
+from paython.exceptions import GatewayError
 
 CARD_TYPES = {
-    'visa' : '4\d{12}(\d{3})?$',
-    'amex' : '37\d{13}$',
-    'mc' : '5[1-5]\d{14}$',
-    'discover':'6011\d{12}',
-    'diners':'(30[0-5]\d{11}|(36|38)\d{12})$'
+    'visa': r'4\d{12}(\d{3})?$',
+    'amex': r'37\d{13}$',
+    'mc': r'5[1-5]\d{14}$',
+    'discover': r'6011\d{12}',
+    'diners': r'(30[0-5]\d{11}|(36|38)\d{12})$'
 }
 
 def parse_xml(element):
@@ -25,7 +23,8 @@ def parse_xml(element):
     if not isinstance(element, xml.dom.minidom.Node):
         try:
             element = xml.dom.minidom.parseString(element)
-        except: raise
+        except xml.parsers.expat.ExpatError as e:
+            raise GatewayError("Error parsing XML: {0}".format(e))
 
     # return DOM element with single text element as string
     if len(element.childNodes) == 1:
@@ -84,7 +83,7 @@ def parse_soap():
         return obj
     elif hasattr(obj, "__dict__"):
         data = dict([(key, parse_soap(value, classkey)) for key, value in obj.__dict__.iteritems() if not callable(value) and not key.startswith('_')])
-        
+
         if classkey is not None and hasattr(obj, "__class__"):
             data[classkey] = obj.__class__.__name__
 
@@ -94,7 +93,7 @@ def parse_soap():
     else:
         if isinstance(obj, sudTypeText):
             obj = str(obj)
-        
+
         return obj
 
 def is_valid_cc(cc):
@@ -110,7 +109,7 @@ def is_valid_exp(month, year):
     """
     month = int(month)
     year = int(year)
-    
+
     exp_date_obj = datetime(year, month, calendar.monthrange(year, month)[1], 23, 59, 59, 59)
     return datetime.now() < exp_date_obj
 
@@ -134,7 +133,7 @@ def get_card_exp(month, year):
     """
     Gets the expiration date by concatenating strings
     """
-    return '%s/%s' % (month, year)
+    return "{0}/{1}".format(month, year)
 
 def is_valid_email(email):
     """
