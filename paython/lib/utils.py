@@ -100,8 +100,12 @@ def is_valid_cc(cc):
     """
     Uses Luhn Algorithm for credit card number validation. http://en.wikipedia.org/wiki/Luhn_algorithm
     """
-    num = map(int, cc)
-    return not sum(num[::-2] + map(lambda d: sum(divmod(d * 2, 10)), num[-2::-2])) % 10
+    try:
+        num = map(int, cc)
+    except ValueError:
+        return False
+    else:
+        return not sum(num[::-2] + map(lambda d: sum(divmod(d * 2, 10)), num[-2::-2])) % 10
 
 def is_valid_exp(month, year):
     """
