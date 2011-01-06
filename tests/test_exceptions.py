@@ -41,4 +41,4 @@ def test_request_error():
     except RequestError as error:
         assert_equals("'Your request is wrong fool!'", str(error))
 
-    raise GatewayError("Your request is wrong fool!")
+    raise RequestError("Your request is wrong fool!")
