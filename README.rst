@@ -22,12 +22,12 @@ You need pip::
 Run Tests
 =========
 
-First run::
+Just run::
 
-    nosetests -v --with-coverage gateways/*
+    nosetests
 
-Then just::
+Or with stats::
 
-    nosetests -v --with-coverage
+    nosetests --quiet --with-coverage --cover-package paython
 
 When initializing a gateway, debug will output request params, xml & response text or xml. test will use the test gateway endpoint, if there is one & will raise an error otherwise (NoTestEndpointError). 

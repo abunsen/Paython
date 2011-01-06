@@ -33,7 +33,10 @@ class CreditCard(object):
         """
         string repr for debugging
         """
-        return u'<CreditCard -- {0.full_name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date} --extra: {0._exp_yr_style}>'.format(self)
+        if hasattr(self, '_exp_yr_style') and self._exp_yr_style:
+            return u'<CreditCard -- {0.full_name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date} --extra: {_exp_yr_style}>'.format(self, _exp_yr_style=self.exp_year[2:])
+        else:
+            return u'<CreditCard -- {0.full_name}, {0.card_type}, {0.safe_num}, expires: {0.exp_date}>'.format(self)
 
     @property
     def safe_num(self):
