@@ -1,17 +1,3 @@
-class NoTestEndpointError(Exception):
-    """ Errors during importing modules needed """
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return repr(self.msg)
-
-class DependencyError(Exception):
-    """ Errors during importing modules needed """
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return repr(self.msg)
-
 class DataValidationError(Exception):
     """ Errors when data is corrupt, malformed or just plain wrong """
     def __init__(self, msg):
