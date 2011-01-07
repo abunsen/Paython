@@ -41,6 +41,26 @@ def test_invalid():
 
 @with_setup(setup, teardown)
 @raises(DataValidationError)
+def test_invalid():
+    """test if a credit card number is luhn invalid"""
+    credit_card = CreditCard(
+            number = "411111111111111a", # invalid credit card
+            exp_mo = "12",
+            exp_yr = "2019",
+            first_name = "John",
+            last_name = "Doe",
+            cvv = "123",
+            strict = False
+    )
+
+    # safe check for luhn valid
+    assert_false(credit_card.is_valid())
+
+    # checking if the exception fires
+    credit_card.validate()
+
+@with_setup(setup, teardown)
+@raises(DataValidationError)
 def test_expired_credit_card():
     """test if a credit card number is expired"""
     credit_card = CreditCard(

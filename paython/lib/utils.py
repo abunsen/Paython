@@ -72,30 +72,6 @@ def parse_xml(element):
 
     return root
 
-def parse_soap():
-    """
-    Parse a suds response. Returns the result as a dict.
-    """
-    if isinstance(obj, dict):
-        for k in obj.keys():
-            obj[k] = to_dict(obj[k], classkey)
-
-        return obj
-    elif hasattr(obj, "__dict__"):
-        data = dict([(key, parse_soap(value, classkey)) for key, value in obj.__dict__.iteritems() if not callable(value) and not key.startswith('_')])
-
-        if classkey is not None and hasattr(obj, "__class__"):
-            data[classkey] = obj.__class__.__name__
-
-        return data
-    elif hasattr(obj, "__iter__"):
-        return [parse_soap(v, classkey) for v in obj]
-    else:
-        if isinstance(obj, sudTypeText):
-            obj = str(obj)
-
-        return obj
-
 def is_valid_cc(cc):
     """
     Uses Luhn Algorithm for credit card number validation. http://en.wikipedia.org/wiki/Luhn_algorithm
@@ -121,9 +97,7 @@ def is_valid_cvv(cc_cvv):
     """
     Simple regex for card validator length & type.
     """
-    if not re.match(r'^[\d+]{3,4}$', cc_cvv):
-        return False 
-    return True
+    return re.match(r'^[\d+]{3,4}$', cc_cvv)
 
 def get_card_type(cc):
     """
@@ -147,7 +121,4 @@ def is_valid_email(email):
     return re.search(pat, email, re.IGNORECASE)
 
 def transform_keys():
-    raise NotImplemented
-
-def transform_obj():
     raise NotImplemented
