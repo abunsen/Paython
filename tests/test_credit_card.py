@@ -21,7 +21,6 @@ def teardown():
 
 @with_setup(setup, teardown)
 @raises(DataValidationError)
-
 def test_invalid():
     """test if a credit card number is luhn invalid"""
     credit_card = CreditCard(
