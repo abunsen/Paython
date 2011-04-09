@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.localflavor.us.forms import USStateSelect, USZipCodeField
 
-from paython.lib.utils import is_valid_cc
+from paython.lib.utils import is_valid_cc, is_valid_cvv
 
 class CustomerInformation(forms.Form):
     """
