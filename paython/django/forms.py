@@ -50,6 +50,14 @@ class ZipCodeForm(forms.Form):
     """
     zipcode = USZipCodeField()
 
+class CityStateZipCode(forms.Form):
+    """
+    And sometimes we need the City and State with the zipcode
+    """
+    city = forms.CharField(max_length=255)
+    state = USStateSelect()
+    zipcode = USZipCodeField()
+
 class AddressForm(forms.Form):
     """
     Address form for new signup
