@@ -21,7 +21,7 @@ class CreditCardForm(forms.Form):
 
     def clean(self):
         """Validates the form"""
-        super(CreditCardPaymentForm, self).clean()
+        super(CreditCardForm, self).clean()
 
         cleaned_data = self.cleaned_data
 
