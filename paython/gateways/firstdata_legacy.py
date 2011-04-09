@@ -134,7 +134,11 @@ class FirstDataLegacy(XMLGateway):
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Preauth')
         #special treatment to make peoples lives easier (extracting addrnum from address)
-        matches = re.match('\d+', billing_info['address'])
+        try:
+            matches = re.match('\d+', billing_info['address'])
+        except KeyError:
+            raise DataValidationError('Unable to find a billing address to extract a number from for gateway')
+        
         if matches:
             super(FirstDataLegacy, self).set('order/billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
         else:

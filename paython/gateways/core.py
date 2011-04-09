@@ -28,7 +28,7 @@ class Gateway(object):
                 except KeyError:
                     pass # it is okay to fail (on exp_month & exp_year)
 
-    def set_billing_info(self, address=None, address2=None, city=None, state=None, zipcode=None, country=None, phone=None, email=None):
+    def set_billing_info(self, address=None, address2=None, city=None, state=None, zipcode=None, country=None, phone=None, email=None, ip=None):
         """
         Set billing info, as necessary, no required keys. Validates email as well formed.
         """
@@ -52,6 +52,9 @@ class Gateway(object):
 
         if phone:
             self.set(self.REQUEST_FIELDS['phone'], phone)
+
+        if ip:
+            self.set(self.REQUEST_FIELDS['ip'], phone)
 
         if email:
             if is_valid_email(email):

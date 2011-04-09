@@ -33,7 +33,11 @@ class XMLGateway(Gateway):
         - child: tuple of child node data or string to create a text node
         - attribute: sets the target XML attributes (string format: "Key:Value")
         """
-        xml_path = path.split('/')
+        try:
+            xml_path = path.split('/')
+        except AttributeError:
+            return # because if it's None, then don't worry
+
         xml_doc = self.doc
 
         # traverse full XML element path string `path`
