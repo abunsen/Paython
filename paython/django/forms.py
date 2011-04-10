@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.localflavor.us.forms import USStateSelect, USZipCodeField
+from django.contrib.localflavor.us.forms import USStateField, USZipCodeField, USStateSelect
 
 from paython.lib.utils import is_valid_cc, is_valid_cvv, is_valid_exp
 
@@ -55,7 +55,7 @@ class CityStateZipCode(forms.Form):
     And sometimes we need the City and State with the zipcode
     """
     city = forms.CharField(max_length=255)
-    state = USStateSelect()
+    state = USStateField(widget=USStateSelect)
     zipcode = USZipCodeField()
 
 class AddressForm(forms.Form):
@@ -65,5 +65,5 @@ class AddressForm(forms.Form):
     address1 = forms.CharField(max_length=255)
     address2 = forms.CharField(max_length=255, required=False)
     city = forms.CharField(max_length=255)
-    state = USStateSelect()
+    state = USStateField(widget=USStateSelect)
     zipcode = USZipCodeField()
