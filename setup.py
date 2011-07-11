@@ -34,4 +34,7 @@ setup(
         "Topic :: Office/Business :: Financial",
         "License :: OSI Approved :: MIT License",
     ],
+    install_requires=[
+        'suds'
+    ]
 )
