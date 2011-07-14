@@ -11,6 +11,12 @@ Supported Gateways
 * Authorize.net
 * Innovative Gateway Solutions (Intuit)
 * First Data Global Gateway (formerly Linkpoint?)
+* PlugnPay
+
+Usage
+===========================
+
+https://github.com/abunsen/Paython/wiki/Usage
 
 Install Requirements
 ===========================
