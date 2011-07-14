@@ -15,6 +15,7 @@ Supported Gateways
 
 Usage
 ===========================
+It's super simple to start:
 
 https://github.com/abunsen/Paython/wiki/Usage
 
