@@ -69,7 +69,7 @@ class CreditCard(object):
             raise DataValidationError('The credit card expiration provided is not in the future')
 
         if self.strict:
-            if not is_valid_cvv(self.verification_value):
+            if not is_valid_cvv(self.verification_value, get_card_type(self.number)):
                 raise DataValidationError('The credit card cvv is not valid')
 
         return True

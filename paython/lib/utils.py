@@ -8,11 +8,11 @@ from suds.sax.text import Text as sudTypeText # for the 'parse_soap()' string ty
 from paython.exceptions import GatewayError
 
 CARD_TYPES = {
-    'visa': r'4\d{12}(\d{3})?$',
-    'amex': r'37\d{13}$',
-    'mc': r'5[1-5]\d{14}$',
-    'discover': r'6011\d{12}',
-    'diners': r'(30[0-5]\d{11}|(36|38)\d{12})$'
+    'visa': {'cc': r'4\d{12}(\d{3})?$', 'cvv': r'^[\d+]{3}$'},
+    'amex': {'cc': r'37\d{13}$', 'cvv': r'^[\d+]{4}$'},
+    'mc': {'cc': r'5[1-5]\d{14}$', 'cvv': r'^[\d+]{3}$'},
+    'discover': {'cc': r'6011\d{12}', 'cvv': r'^[\d+]{3}$'},
+    'diners': {'cc': r'(30[0-5]\d{11}|(36|38)\d{12})$', 'cvv': r'^[\d+]{3}$'},
 }
 
 def parse_xml(element):
@@ -93,18 +93,24 @@ def is_valid_exp(month, year):
     exp_date_obj = datetime(year, month, calendar.monthrange(year, month)[1], 23, 59, 59, 59)
     return datetime.now() < exp_date_obj
 
-def is_valid_cvv(cc_cvv):
+def is_valid_cvv(cc_cvv, type=None):
     """
     Simple regex for card validator length & type.
     """
-    return re.match(r'^[\d+]{3,4}$', cc_cvv)
+    cvv_re = r'^[\d+]{3,4}$'
+    if type is not None:
+        try:
+            cvv_re = CARD_TYPES[type].cvv
+        except KeyError:
+            return False
+    return re.match(cvv_re, cc_cvv)
 
 def get_card_type(cc):
     """
     Gets card type by using card number
     """
     for k, v in CARD_TYPES.items():
-        if re.match(v, cc):
+        if re.match(v.cc, cc):
             return k
 
 def get_card_exp(month, year):
