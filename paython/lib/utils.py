@@ -100,7 +100,7 @@ def is_valid_cvv(cc_cvv, type=None):
     cvv_re = r'^[\d+]{3,4}$'
     if type is not None:
         try:
-            cvv_re = CARD_TYPES[type].cvv
+            cvv_re = CARD_TYPES[type]['cvv']
         except KeyError:
             return False
     return re.match(cvv_re, cc_cvv)
@@ -110,7 +110,7 @@ def get_card_type(cc):
     Gets card type by using card number
     """
     for k, v in CARD_TYPES.items():
-        if re.match(v.cc, cc):
+        if re.match(v['cc'], cc):
             return k
 
 def get_card_exp(month, year):
