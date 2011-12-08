@@ -53,6 +53,7 @@ class AuthorizeNet(GetGateway):
         'trans_type': 'x_type',
         'trans_id': 'x_trans_id',
         'alt_trans_id': None,
+        'invoice_num': 'x_invoice_num',
     }
 
     # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
@@ -78,12 +79,14 @@ class AuthorizeNet(GetGateway):
     debug = False
     test = False
 
-    def __init__(self, username='test', password='testpassword', debug=False, test=False, delim=None):
+    def __init__(self, username='test', password='testpassword', debug=False, test=False, delim=None, duplicate_window=None):
         """
         setting up object so we can run 4 different ways (live, debug, test & debug+test)
         """
         super(AuthorizeNet, self).set('x_login', username)
         super(AuthorizeNet, self).set('x_tran_key', password)
+        if duplicate_window is None:
+            super(AuthorizeNet, self).set('x_duplicate_window', duplicate_window)
 
         # passing fields to bubble up to Base Class
         super(AuthorizeNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
@@ -111,7 +114,7 @@ class AuthorizeNet(GetGateway):
             debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
             print debug_string.center(80, '=')
 
-    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
+    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, invoice_num=None):
         """
         Sends charge for authorization based on amount
         """
@@ -121,6 +124,8 @@ class AuthorizeNet(GetGateway):
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
+        if not invoice_num is None:
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['invoice_num'], invoice_num)
 
         # validating or building up request
         if not credit_card:

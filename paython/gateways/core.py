@@ -24,14 +24,22 @@ class Gateway(object):
         for key, value in credit_card.__dict__.items():
             if not key.startswith('_'):
                 try:
-                    self.set(self.REQUEST_FIELDS[key], value)
+                    if self.REQUEST_FIELDS[key]:
+                        self.set(self.REQUEST_FIELDS[key], value)
                 except KeyError:
                     pass # it is okay to fail (on exp_month & exp_year)
 
-    def set_billing_info(self, address=None, address2=None, city=None, state=None, zipcode=None, country=None, phone=None, email=None, ip=None):
+    def set_billing_info(self, first_name=None, last_name=None, address=None, address2=None, city=None, state=None,
+                         zipcode=None, country=None, phone=None, email=None, ip=None):
         """
         Set billing info, as necessary, no required keys. Validates email as well formed.
         """
+        if first_name:
+            self.set(self.REQUEST_FIELDS['first_name'], first_name)
+
+        if last_name:
+            self.set(self.REQUEST_FIELDS['last_name'], last_name)
+
         if address:
             self.set(self.REQUEST_FIELDS['address'], address)
 
@@ -54,7 +62,7 @@ class Gateway(object):
             self.set(self.REQUEST_FIELDS['phone'], phone)
 
         if ip:
-            self.set(self.REQUEST_FIELDS['ip'], phone)
+            self.set(self.REQUEST_FIELDS['ip'], ip)
 
         if email:
             if is_valid_email(email):
