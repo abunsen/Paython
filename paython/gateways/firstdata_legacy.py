@@ -133,16 +133,6 @@ class FirstDataLegacy(XMLGateway):
         #setting transaction data
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Preauth')
-        #special treatment to make peoples lives easier (extracting addrnum from address)
-        try:
-            matches = re.match('\d+', billing_info['address'])
-        except KeyError:
-            raise DataValidationError('Unable to find a billing address to extract a number from for gateway')
-        
-        if matches:
-            super(FirstDataLegacy, self).set('order/billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
-        else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')
 
         # validating or building up request
         if not credit_card:
@@ -191,13 +181,6 @@ class FirstDataLegacy(XMLGateway):
         #setting transaction data
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Sale')
-
-        #special treatment to make peoples lives easier (extracting addrnum from address)
-        matches = re.match('\d+', billing_info['address'])
-        if matches:
-            super(FirstDataLegacy, self).set('order/billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
-        else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')
 
         # validating or building up request
         if not credit_card:
