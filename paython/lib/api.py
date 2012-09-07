@@ -24,12 +24,12 @@ class XMLGateway(Gateway):
         super(XMLGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
 
     def set(self, path, child=False, attribute=False):
-        """ Accepts a forward slash seperated path of XML elements to traverse and create if non existent.
+        """ Accepts a forward slash separated path of XML elements to traverse and create if non existent.
         Optional child and target node attributes can be set. If the `child` attribute is a tuple
         it will create X child nodes by reading each tuple as (name, text, 'attribute:value') where value
         and attributes are optional for each tuple.
 
-        - path: forward slash seperated API element path as string (example: "Order/Authentication/Username")
+        - path: forward slash separated API element path as string (example: "Order/Authentication/Username")
         - child: tuple of child node data or string to create a text node
         - attribute: sets the target XML attributes (string format: "Key:Value")
         """
@@ -132,8 +132,151 @@ class XMLGateway(Gateway):
 
         return resp_dict
 
-class SOAPGateway(object):
-    pass
+class SOAPGateway(Gateway):
+
+    def __init__(self, host, authentication, translations, debug=False, special_params={}):
+        """ initalize API call session
+
+        host: hostname (apigateway.tld)
+        auth: accept a tuple with (username,password)
+        debug: True/False
+        """
+        self.doc = xml.dom.minidom.Document()
+        envelope = self.doc.createElementNS('http://schemas.xmlsoap.org/soap/envelope/', 
+                'SOAP-ENV:Envelope')
+        envelope.setAttribute("xmlns:SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/")
+        soapheader = self.doc.createElement('SOAP-ENV:Header')
+        soapbody = self.doc.createElement('SOAP-ENV:Body')
+        fdgg = self.doc.createElementNS('http://secure.linkpt.net/fdggwsapi/schemas_us/fdggwsapi', 
+                'fdggwsapi:FDGGWSApiOrderRequest')
+        fdgg.setAttribute("xmlns:fdggwsapi", 
+                "http://secure.linkpt.net/fdggwsapi/schemas_us/fdggwsapi")
+        transaction = self.doc.createElementNS('http://secure.linkpt.net/fdggwsapi/schemas_us/v1', 
+                'v1:Transaction')
+        transaction.setAttribute("xmlns:v1", "http://secure.linkpt.net/fdggwsapi/schemas_us/v1")
+        fdgg.appendChild(transaction)
+        soapbody.appendChild(fdgg)
+        envelope.appendChild(soapheader)
+        envelope.appendChild(soapbody)
+        self.doc.appendChild(envelope)
+        self.api_host = host
+        self.debug = debug
+        self.parse_xml = parse_xml
+        self.special_ssl = special_params
+        self.authentication = authentication
+        super(SOAPGateway, self).__init__(set_method=self.set, translations=translations, debug=debug)
+
+    def set(self, path, child=False, attribute=False):
+        """ Accepts a forward slash separated path of XML elements to traverse and create if non existent.
+        Optional child and target node attributes can be set. If the `child` attribute is a tuple
+        it will create X child nodes by reading each tuple as (name, text, 'attribute:value') where value
+        and attributes are optional for each tuple.
+
+        - path: forward slash separated API element path as string (example: "Order/Authentication/Username")
+        - child: tuple of child node data or string to create a text node
+        - attribute: sets the target XML attributes (string format: "Key:Value")
+        """
+        try:
+            xml_path = path.split('/')
+        except AttributeError:
+            return # because if it's None, then don't worry
+
+        xml_doc = self.doc
+        transaction = self.doc.getElementsByTagName("v1:Transaction")[0]
+
+        # traverse full XML element path string `path`
+        for element_name in xml_path:
+            # get existing XML element by `element_name`
+            element = self.doc.getElementsByTagName('v1:' + element_name)
+            if element: element = element[0]
+
+            # create element if non existing or target element
+            if not element or element_name == xml_path[-1:][0]:
+                element = self.doc.createElement('v1:' + element_name)
+                transaction.appendChild(element)
+            transaction = element
+
+        if child:
+            # create child elements from an tuple with optional text node or attributes
+            # format: ((name1, text, 'attribute:value'), (name2, text2))
+            if isinstance(child, tuple):
+                for obj in child:
+                    child = self.doc.createElement(obj[0])
+                    if len(obj) >= 2:
+                        element = self.doc.createTextNode(str(obj[1]))
+                        child.appendChild(element)
+                    if len(obj) == 3:
+                        a = obj[2].split(':')
+                        child.setAttribute(a[0], a[1])
+                    transaction.appendChild(child)
+            # create a single text child node
+            else:
+                element = self.doc.createTextNode(str(child))
+                transaction.appendChild(element)
+
+        # target element attributes
+        if attribute:
+            #checking to see if we have a list of attributes
+            if '|' in attribute:
+                attributes = attribute.split('|')
+            else:
+                #if not just put this into a list so we have the same data type no matter what
+                attributes = [attribute]
+
+            # adding attributes for each item
+            for attribute in attributes:
+                attribute = attribute.split(':')
+                transaction.setAttribute(attribute[0], attribute[1])
+
+    def request_xml(self):
+        """
+        Stringifies request xml for debugging
+        """
+        return self.doc.toprettyxml()
+
+    def make_request(self, api_uri):
+        """ 
+        Submits the API request as XML formated string via HTTP POST and parse gateway response.
+        This needs to be run after adding some data via 'set'
+        """
+        request_body = self.doc.toxml('utf-8')
+
+        # checking to see if we have any special params
+        if self.special_ssl:
+            kwargs = self.special_ssl
+            api = httplib.HTTPSConnection(self.api_host, **kwargs)
+        else:
+            api = httplib.HTTPSConnection(self.api_host)
+
+        api.connect()
+        
+        #request_body = '<?xml version="1.0" ?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">	<SOAP-ENV:Header/>	<SOAP-ENV:Body>		<fdggwsapi:FDGGWSApiOrderRequest xmlns:fdggwsapi="http://secure.linkpt.net/fdggwsapi/schemas_us/fdggwsapi">			<v1:Transaction xmlns:v1="http://secure.linkpt.net/fdggwsapi/schemas_us/v1">			<v1:CreditCardTxType><v1:Type>sale</v1:Type></v1:CreditCardTxType><v1:CreditCardData><v1:CardNumber>5555555555554444</v1:CardNumber><v1:ExpMonth>12</v1:ExpMonth><v1:ExpYear>12</v1:ExpYear><v1:CardCodeValue>904</v1:CardCodeValue><v1:CardCodeIndicator>PROVIDED</v1:CardCodeIndicator></v1:CreditCardData><v1:Payment><v1:ChargeTotal>1</v1:ChargeTotal></v1:Payment></v1:Transaction></fdggwsapi:FDGGWSApiOrderRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>'
+        api.putrequest('POST', api_uri, skip_host=True)
+        api.putheader('Host', self.api_host)
+        api.putheader('Content-type', 'text/xml; charset="utf-8"')
+        api.putheader("Content-length", str(len(request_body)))
+        api.putheader('User-Agent', 'www.ticketometer.com')
+        api.putheader('Authorization', self.authentication)
+        api.endheaders()
+        api.send(request_body)
+
+        resp = api.getresponse()
+        resp_data = resp.read()
+
+        # parse API call response
+        if not resp.status == 200 and not resp.status == 202:
+            raise RequestError('Gateway returned %i status' % resp.status)
+
+        # parse XML response and return as dict
+        try:
+            resp_dict = self.parse_xml(resp_data)
+        except:
+            try:
+                resp_dict = self.parse_xml('<?xml version="1.0"?><response>%s</response>' % resp_data)
+            except:
+                raise RequestError('Could not parse XML into JSON')
+        print "\n\n\n resp dict is \n " + repr(resp_dict)
+        return resp_dict
 
 class GetGateway(Gateway):
     REQUEST_DICT = {}

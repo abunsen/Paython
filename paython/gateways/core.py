@@ -21,12 +21,21 @@ class Gateway(object):
         if hasattr(credit_card, '_exp_yr_style'): # here for gateways that like 2 digit expiration years
             credit_card.exp_year = credit_card.exp_year[-2:]
 
-        for key, value in credit_card.__dict__.items():
+        '''for key, value in credit_card.__dict__.items():
             if not key.startswith('_'):
                 try:
                     self.set(self.REQUEST_FIELDS[key], value)
                 except KeyError:
-                    pass # it is okay to fail (on exp_month & exp_year)
+                    pass # it is okay to fail (on exp_month & exp_year)'''
+        if credit_card.number:
+            self.set(self.REQUEST_FIELDS['number'], credit_card.number)
+        if credit_card.exp_month:
+            self.set(self.REQUEST_FIELDS['exp_month'], credit_card.exp_month)
+        if credit_card.exp_year:
+            self.set(self.REQUEST_FIELDS['exp_year'], credit_card.exp_year)
+        if credit_card.verification_value:
+            self.set(self.REQUEST_FIELDS['verification_value'], credit_card.verification_value)
+            self.set(self.REQUEST_FIELDS['indicator'], 'PROVIDED')
 
     def set_billing_info(self, address=None, address2=None, city=None, state=None, zipcode=None, country=None, phone=None, email=None, ip=None):
         """
