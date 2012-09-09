@@ -134,7 +134,7 @@ class XMLGateway(Gateway):
 
 class SOAPGateway(Gateway):
 
-    def __init__(self, host, authentication, translations, debug=False, special_params={}):
+    def __init__(self, host, authentication, translations, debug=False, test=False, special_params={}):
         """ initalize API call session
 
         host: hostname (apigateway.tld)
@@ -154,6 +154,10 @@ class SOAPGateway(Gateway):
         transaction = self.doc.createElementNS('http://secure.linkpt.net/fdggwsapi/schemas_us/v1', 
                 'v1:Transaction')
         transaction.setAttribute("xmlns:v1", "http://secure.linkpt.net/fdggwsapi/schemas_us/v1")
+        #if test:
+        #    transaction = self.doc.createElementNS('http://staging.linkpt.net/fdggwsapi/schemas_us/v1', 
+        #        'v1:Transaction')
+        #    transaction.setAttribute("xmlns:v1", "http://staging.linkpt.net/fdggwsapi/schemas_us/v1")
         fdgg.appendChild(transaction)
         soapbody.appendChild(fdgg)
         envelope.appendChild(soapheader)
@@ -249,8 +253,6 @@ class SOAPGateway(Gateway):
             api = httplib.HTTPSConnection(self.api_host)
 
         api.connect()
-        
-        #request_body = '<?xml version="1.0" ?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">	<SOAP-ENV:Header/>	<SOAP-ENV:Body>		<fdggwsapi:FDGGWSApiOrderRequest xmlns:fdggwsapi="http://secure.linkpt.net/fdggwsapi/schemas_us/fdggwsapi">			<v1:Transaction xmlns:v1="http://secure.linkpt.net/fdggwsapi/schemas_us/v1">			<v1:CreditCardTxType><v1:Type>sale</v1:Type></v1:CreditCardTxType><v1:CreditCardData><v1:CardNumber>5555555555554444</v1:CardNumber><v1:ExpMonth>12</v1:ExpMonth><v1:ExpYear>12</v1:ExpYear><v1:CardCodeValue>904</v1:CardCodeValue><v1:CardCodeIndicator>PROVIDED</v1:CardCodeIndicator></v1:CreditCardData><v1:Payment><v1:ChargeTotal>1</v1:ChargeTotal></v1:Payment></v1:Transaction></fdggwsapi:FDGGWSApiOrderRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>'
         api.putrequest('POST', api_uri, skip_host=True)
         api.putheader('Host', self.api_host)
         api.putheader('Content-type', 'text/xml; charset="utf-8"')

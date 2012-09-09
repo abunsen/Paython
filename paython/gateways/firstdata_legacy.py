@@ -396,7 +396,7 @@ class FirstData(SOAPGateway):
         if self.test:
             url = urlparse.urlparse(self.API_URI['test']).netloc.split(':')[0]
         # initing the XML gateway
-        super(FirstData, self).__init__(url, authentication, translations=self.REQUEST_FIELDS, debug=debug, special_params=ssl_config)
+        super(FirstData, self).__init__(url, authentication, translations=self.REQUEST_FIELDS, debug=debug, test=test, special_params=ssl_config)
 
         if debug:
             self.debug = True
