@@ -130,7 +130,7 @@ class AuthorizeNet(GetGateway):
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
-            super(AuthorizeNet, self).use_credit_card(credit_card)
+            super(AuthorizeNet, self).use_credit_card2(credit_card)
 
         if billing_info:
             super(AuthorizeNet, self).set_billing_info(**billing_info)
@@ -177,7 +177,7 @@ class AuthorizeNet(GetGateway):
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
-            super(AuthorizeNet, self).use_credit_card(credit_card)
+            super(AuthorizeNet, self).use_credit_card2(credit_card)
 
         if billing_info:
             super(AuthorizeNet, self).set_billing_info(**billing_info)
@@ -214,7 +214,8 @@ class AuthorizeNet(GetGateway):
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'CREDIT')
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
-        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['number'], credit_card.number)
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['number'], credit_card)
+        #super(AuthorizeNet, self).set(self.REQUEST_FIELDS['exp_date'], str(credit_card.exp_month) + str(credit_card.exp_year)[-2:])
 
         if amount: #check to see if we should send an amount
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
