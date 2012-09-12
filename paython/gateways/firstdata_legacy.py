@@ -466,7 +466,8 @@ class FirstData(SOAPGateway):
 
         # send transaction to gateway!
         response, response_time = self.request()
-        return self.parse(response, response_time)
+        #return self.parse(response, response_time)
+        return response['SOAP-ENV:Envelope']['meta']['SOAP-ENV:Body']['fdggwsapi:FDGGWSApiOrderResponse']['meta']
 
     def settle(self, amount, trans_id):
         """
@@ -492,17 +493,7 @@ class FirstData(SOAPGateway):
         self.charge_setup() # considering turning this into a decorator?
 
         #setting transaction data
-        super(FirstData, self).set(self.REQUEST_FIELDS['trans_origin'], 'ECI')
-        super(FirstData, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(FirstData, self).set(self.REQUEST_FIELDS['trans_type'], 'sale')
-
-        #special treatment to make peoples lives easier (extracting addrnum from address)
-        '''matches = re.match('\d+', billing_info['address'])
-        if matches:
-            super(FirstData, self).set('Billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
-        else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')'''
-
         # validating or building up request
         if not credit_card:
             if self.debug: 
@@ -513,6 +504,20 @@ class FirstData(SOAPGateway):
         else:
             credit_card._exp_yr_style = True
             super(FirstData, self).use_credit_card(credit_card)
+        super(FirstData, self).set(self.REQUEST_FIELDS['amount'], amount)
+        super(FirstData, self).set(self.REQUEST_FIELDS['trans_origin'], 'ECI')
+
+        
+        #special treatment to make peoples lives easier (extracting addrnum from address)
+        '''matches = re.match('\d+', billing_info['address'])
+        if matches:
+            super(FirstData, self).set('Billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
+        else:
+            raise DataValidationError('Unable to find a number at the start of provided billing address')'''
+
+        if credit_card.full_name:
+            super(FirstData, self).set(self.REQUEST_FIELDS['full_name'],
+                    credit_card.full_name)            
 
         if billing_info:
             super(FirstData, self).set_billing_info(**billing_info)
@@ -522,7 +527,8 @@ class FirstData(SOAPGateway):
 
         # send transaction to gateway!
         response, response_time = self.request()
-        return self.parse(response, response_time)
+        return response['SOAP-ENV:Envelope']['meta']['SOAP-ENV:Body']['fdggwsapi:FDGGWSApiOrderResponse']['meta']
+        #return self.parse(response, response_time)
 
     def void(self, trans_id):
         """
@@ -557,7 +563,8 @@ class FirstData(SOAPGateway):
 
         # send transaction to gateway!
         response, response_time = self.request()
-        return self.parse(response, response_time)
+        return response['SOAP-ENV:Envelope']['meta']['SOAP-ENV:Body']['fdggwsapi:FDGGWSApiOrderResponse']['meta']
+        #return self.parse(response, response_time)
 
     def request(self):
         """

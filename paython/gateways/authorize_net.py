@@ -140,7 +140,8 @@ class AuthorizeNet(GetGateway):
 
         # send transaction to gateway!
         response, response_time = self.request()
-        return self.parse(response, response_time)
+        return response.split(self.DELIMITER)
+        #return self.parse(response, response_time)
 
     def settle(self, amount, trans_id):
         """
@@ -187,7 +188,8 @@ class AuthorizeNet(GetGateway):
 
         # send transaction to gateway!
         response, response_time = self.request()
-        return self.parse(response, response_time)
+        return response.split(self.DELIMITER)
+        #return self.parse(response, response_time)
 
     def void(self, trans_id):
         """
@@ -222,7 +224,8 @@ class AuthorizeNet(GetGateway):
 
         # send transaction to gateway!
         response, response_time = self.request()
-        return self.parse(response, response_time)
+        return response.split(self.DELIMITER)
+        #return self.parse(response, response_time)
 
     def request(self):
         """

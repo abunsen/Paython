@@ -277,7 +277,6 @@ class SOAPGateway(Gateway):
                 resp_dict = self.parse_xml('<?xml version="1.0"?><response>%s</response>' % resp_data)
             except:
                 raise RequestError('Could not parse XML into JSON')
-        print "\n\n\n resp dict is \n " + repr(resp_dict)
         return resp_dict
 
 class GetGateway(Gateway):
