@@ -10,7 +10,8 @@ class FirstDataLegacy(XMLGateway):
 
     # This is how we determine whether or not we allow 'test' as an init param
     API_URI = {
-        'live' : 'https://secure.linkpt.net/LSGSXML'
+        'live' : 'https://secure.linkpt.net/LSGSXML',
+        'test' : 'https://staging.linkpt.net/lpc/servlet/lppay'
     }
 
     # This is how we translate the common Paython fields to Gateway specific fields
@@ -90,11 +91,16 @@ class FirstDataLegacy(XMLGateway):
         ssl_config = {'port':'1129', 'key_file':key_file, 'cert_file':cert_file}
         # there is only a live environment, with test credentials & we only need the host for now
         url = urlparse.urlparse(self.API_URI['live']).netloc.split(':')[0]
+        if test:
+            url = urlparse.urlparse(self.API_URI['test']).netloc.split(':')[0]
         # initing the XML gateway
         super(FirstDataLegacy, self).__init__(url, translations=self.REQUEST_FIELDS, debug=debug, special_params=ssl_config)
 
         #setting some creds
         super(FirstDataLegacy, self).set('order/merchantinfo/configfile', username)
+        #super(FirstDataLegacy, self).set('order/merchantinfo/keyfile', key_file)
+        #super(FirstDataLegacy, self).set('order/merchantinfo/host', "staging.linkpt.net")
+        #super(FirstDataLegacy, self).set('order/merchantinfo/port', 1129)
 
         if debug:
             self.debug = True
@@ -133,16 +139,6 @@ class FirstDataLegacy(XMLGateway):
         #setting transaction data
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Preauth')
-        #special treatment to make peoples lives easier (extracting addrnum from address)
-        try:
-            matches = re.match('\d+', billing_info['address'])
-        except KeyError:
-            raise DataValidationError('Unable to find a billing address to extract a number from for gateway')
-        
-        if matches:
-            super(FirstDataLegacy, self).set('order/billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
-        else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')
 
         # validating or building up request
         if not credit_card:
@@ -153,7 +149,7 @@ class FirstDataLegacy(XMLGateway):
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
             credit_card._exp_yr_style = True
-            super(FirstDataLegacy, self).use_credit_card(credit_card)
+            super(FirstDataLegacy, self).use_credit_card2(credit_card)
 
         if billing_info:
             super(FirstDataLegacy, self).set_billing_info(**billing_info)
@@ -192,13 +188,6 @@ class FirstDataLegacy(XMLGateway):
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(FirstDataLegacy, self).set(self.REQUEST_FIELDS['trans_type'], 'Sale')
 
-        #special treatment to make peoples lives easier (extracting addrnum from address)
-        matches = re.match('\d+', billing_info['address'])
-        if matches:
-            super(FirstDataLegacy, self).set('order/billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
-        else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')
-
         # validating or building up request
         if not credit_card:
             if self.debug: 
@@ -208,7 +197,7 @@ class FirstDataLegacy(XMLGateway):
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
             credit_card._exp_yr_style = True
-            super(FirstDataLegacy, self).use_credit_card(credit_card)
+            super(FirstDataLegacy, self).use_credit_card2(credit_card)
 
         if billing_info:
             super(FirstDataLegacy, self).set_billing_info(**billing_info)
@@ -261,11 +250,15 @@ class FirstDataLegacy(XMLGateway):
         """
         #getting the uri to POST xml to
         uri = urlparse.urlparse(self.API_URI['live']).path
+        if self.test:
+            uri = urlparse.urlparse(self.API_URI['test']).path
 
         if self.debug:  # I wish I could hide debugging
             debug_string = " paython.gateways.firstdata_legacy.request() -- Attempting request to: "
             print debug_string.center(80, '=')
             debug_string = "\n %s with params: %s" % (self.API_URI['live'], super(FirstDataLegacy, self).request_xml())
+            if self.test:
+                debug_string = "\n %s with params: %s" % (self.API_URI['test'], super(FirstDataLegacy, self).request_xml())
             print debug_string
 
         # make the request
@@ -313,7 +306,7 @@ class FirstData(SOAPGateway):
         'web' : 'https://ws.firstdataglobalgateway.com/fdggwsapi/services',
         'test' : 'https://ws.merchanttest.firstdataglobalgateway.com/fdggwsapi/services',
     }
-
+    
     # This is how we translate the common Paython fields to Gateway specific fields
     # it goes like this: 'paython_key' ==> 'gateway_specific_parameter'
     REQUEST_FIELDS = {
@@ -429,16 +422,6 @@ class FirstData(SOAPGateway):
 
         #setting transaction data
         super(FirstData, self).set(self.REQUEST_FIELDS['trans_type'], 'preAuth')
-        #special treatment to make peoples lives easier (extracting addrnum from address)
-        '''try:
-            matches = re.match('\d+', billing_info['address'])
-        except KeyError:
-            raise DataValidationError('Unable to find a billing address to extract a number from for gateway')
-        
-        if matches:
-            super(FirstData, self).set('Billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
-        else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')'''
 
         # validating or building up request
         if not credit_card:
@@ -506,14 +489,6 @@ class FirstData(SOAPGateway):
             super(FirstData, self).use_credit_card(credit_card)
         super(FirstData, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(FirstData, self).set(self.REQUEST_FIELDS['trans_origin'], 'ECI')
-
-        
-        #special treatment to make peoples lives easier (extracting addrnum from address)
-        '''matches = re.match('\d+', billing_info['address'])
-        if matches:
-            super(FirstData, self).set('Billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
-        else:
-            raise DataValidationError('Unable to find a number at the start of provided billing address')'''
 
         if credit_card.full_name:
             super(FirstData, self).set(self.REQUEST_FIELDS['full_name'],

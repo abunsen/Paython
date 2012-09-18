@@ -106,11 +106,13 @@ class XMLGateway(Gateway):
             api = httplib.HTTPSConnection(self.api_host)
 
         api.connect()
+        print "\n\nAPI URI IS " + str(api_uri)
+        print "\n\nHost is " + str(self.api_host)
         api.putrequest('POST', api_uri, skip_host=True)
         api.putheader('Host', self.api_host)
         api.putheader('Content-type', 'text/xml; charset="utf-8"')
         api.putheader("Content-length", str(len(request_body)))
-        api.putheader('User-Agent', 'yourdomain.net')
+        api.putheader('User-Agent', 'ticketometer.com')
         api.endheaders()
         api.send(request_body)
 
