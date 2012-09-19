@@ -24,8 +24,7 @@ class CreditCard(object):
         self.exp_date = get_card_exp(self.exp_month, self.exp_year)
         self.card_type = get_card_type(self.number)
 
-        if cvv:
-            self.verification_value = cvv
+        self.verification_value = cvv if cvv else None
 
         self.strict = strict
 
