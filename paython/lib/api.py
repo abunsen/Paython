@@ -150,6 +150,15 @@ class GetGateway(Gateway):
         """
         self.REQUEST_DICT[key] = value
 
+    def unset(self, key):
+        """
+        Sets up request dict for Get
+        """
+        try:
+            del self.REQUEST_DICT[key]
+        except KeyError:
+            raise DataValidationError('The key being unset is non-existent in the request dictionary.')
+
     def query_string(self):
         """
         Build the query string to use later (in get)

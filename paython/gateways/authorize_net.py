@@ -48,11 +48,13 @@ class AuthorizeNet(GetGateway):
         'ship_state': 'x_ship_to_state',
         'ship_zipcode': 'x_ship_to_zip',
         'ship_country': 'x_ship_to_country',
-        #transation
+        #transaction
         'amount': 'x_amount',
         'trans_type': 'x_type',
         'trans_id': 'x_trans_id',
         'alt_trans_id': None,
+        'split_tender_id':'x_split_tender_id',
+        'is_partial':'x_allow_partial_auth',
     }
 
     # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
@@ -72,6 +74,9 @@ class AuthorizeNet(GetGateway):
         '12':'alt_trans_id',
         '38':'cvv_response',
         '43':'amount',
+        '53':'split_tender_id',
+        '54':'requested_amount',
+        '55':'balance_on_card',
         #'n/a':'alt_trans_id2', <-- third way of id'ing a transaction
     }
 
@@ -111,7 +116,7 @@ class AuthorizeNet(GetGateway):
             debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
             print debug_string.center(80, '=')
 
-    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
+    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None):
         """
         Sends charge for authorization based on amount
         """
@@ -121,6 +126,11 @@ class AuthorizeNet(GetGateway):
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
+
+        # support for partial auths
+        if is_partial:
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['is_partial'], 'true')
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
 
         # validating or building up request
         if not credit_card:
@@ -142,7 +152,7 @@ class AuthorizeNet(GetGateway):
         response, response_time = self.request()
         return self.parse(response, response_time)
 
-    def settle(self, amount, trans_id):
+    def settle(self, amount, trans_id, split_id=None):
         """
         Sends prior authorization to be settled based on amount & trans_id PRIOR_AUTH_CAPTURE
         """
@@ -153,6 +163,10 @@ class AuthorizeNet(GetGateway):
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'PRIOR_AUTH_CAPTURE')
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+
+        if split_id: # settles the entire split
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
+            super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
 
         # send transaction to gateway!
         response, response_time = self.request()
@@ -189,7 +203,7 @@ class AuthorizeNet(GetGateway):
         response, response_time = self.request()
         return self.parse(response, response_time)
 
-    def void(self, trans_id):
+    def void(self, trans_id, split_id=None):
         """
         Sends a transaction to be voided (in full)
         """
@@ -200,11 +214,15 @@ class AuthorizeNet(GetGateway):
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'VOID')
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
 
+        if split_id: # voids an entire split (alternatively, a trans_id just kills that particular txn)
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
+            super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
+
         # send transaction to gateway!
         response, response_time = self.request()
         return self.parse(response, response_time)
 
-    def credit(self, amount, trans_id, credit_card):
+    def credit(self, amount, trans_id, credit_card, split_id=None):
         """
         Sends a transaction to be refunded (partially or fully)
         """
@@ -218,6 +236,10 @@ class AuthorizeNet(GetGateway):
 
         if amount: #check to see if we should send an amount
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
+
+        if split_id: # voids an entire split (alternatively, a trans_id just kills that particular txn)
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)            
+            super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
 
         # send transaction to gateway!
         response, response_time = self.request()
