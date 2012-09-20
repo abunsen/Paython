@@ -12,7 +12,9 @@ class Stripe(object):
 
     RESPONSE_KEYS = {
         'id':'trans_id',
-        'amount':'amount'
+        'amount':'amount',
+        'cvv_response':'cvc_check',
+        'avs_response':'address_line1_check',   
     }
     debug = False
     test = False
@@ -25,7 +27,7 @@ class Stripe(object):
         we have username and api_key because other gateways use "username" 
         and we want to make it simple to change out gateways ;)
         """
-        self.stripe_api.api_key = username if username else api_key
+        self.stripe_api.api_key = username or api_key
 
         if debug:
             self.debug = True
@@ -47,10 +49,12 @@ class Stripe(object):
         raise NotImplementedError('Stripe does not support auth or settlement. Try capture().')
 
     def capture(self, amount, credit_card=None, billing_info=None, shipping_info=None):
-        credit_card.validate() # validate the card first
+        if self.debug: # debugging is so gross
+            debug_string = " paython.gateways.stripe.parse() -- Sending charge "
+            print debug_string.center(80, '=')
 
-        # then change the amount to how stripe likes it
-        amount = int(amount.replace('.', ''))
+        credit_card.validate() # validate the card first
+        amount = int(float(amount)*100) # then change the amount to how stripe likes it
 
         start = time.time() # timing it
         try:
@@ -90,12 +94,22 @@ class Stripe(object):
         raise NotImplementedError('Stripe does not support transaction voiding. Try credit().')
 
     def credit(self, amount, trans_id):
-        amount = int(amount.replace('.', ''))
+        if self.debug: # debugging is so gross
+            debug_string = " paython.gateways.stripe.parse() -- Sending credit "
+            print debug_string.center(80, '=')
+
+        amount = int(float(amount)*100)
         start = time.time() # timing it
-        ch = self.stripe_api.Charge.retrieve(trans_id)
-        response = ch.refund(amount=amount)
-        end = time.time() # done timing it
-        response_time = '%0.2f' % (end-start)
+        try:
+            ch = self.stripe_api.Charge.retrieve(trans_id)
+            response = ch.refund(amount=amount)
+        except Exception, e:
+            response = {'failure_message':'Unable to refund: %s' % e}
+            end = time.time() # done timing it
+            response_time = '%0.2f' % (end-start)
+        else:
+            end = time.time() # done timing it
+            response_time = '%0.2f' % (end-start)
 
         return self.parse(response, response_time)
 
@@ -109,41 +123,26 @@ class Stripe(object):
         cvv_response
         avs_response
 
-        before returning it
+        before returning the dict
         """
         if hasattr(response, 'to_dict'):
-            if self.debug: # debugging is so gross
-                debug_string = " paython.gateways.stripe.parse() -- Object response: "
-                print debug_string.center(80, '=')
-                debug_string = "\n %s" % response
-                print debug_string
-                response = response.to_dict()
-        else:
-            if self.debug: # debugging is so gross
-                debug_string = " paython.gateways.stripe.parse() -- Dict response: "
-                print debug_string.center(80, '=')
-                debug_string = "\n %s" % response
-                print debug_string
+            response = response.to_dict()
+
+        if self.debug: # debugging is so gross
+            debug_string = " paython.gateways.stripe.parse() -- Dict response: "
+            print debug_string.center(80, '=')
+            debug_string = "\n %s" % response
+            print debug_string
         
         new_response = {}
 
         # alright now lets stuff some info in here
         new_response['response_time'] = response_time
         # determining success
-        if not response['failure_message']:
-            new_response['response_text'] = 'success'
-            new_response['approved'] = True
-        else:
-            new_response['response_text'] = response['failure_message']
-            new_response['approved'] = False
-
-        if response.get('cvc_check'):
-            new_response['cvv_response'] = response['cvc_check']
-
-        if response.get('address_line1_check'):
-            new_response['avs_response'] = response['address_line1_check']
-
-        trans_type = 'credit' if response.get('amount_refunded') > 0 else 'capture'
+        new_response['response_text'] = response['failure_message'] or 'success'
+        new_response['approved'] = True if not response['failure_message'] else False
+        # trans type ;)
+        new_response['trans_type'] = 'credit' if response.get('amount_refunded') > 0 else 'capture'
 
         for key in self.RESPONSE_KEYS.keys():
             if response.get(key):
