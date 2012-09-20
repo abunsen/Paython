@@ -1,4 +1,3 @@
-import pdb
 import time
 
 try:
@@ -53,7 +52,6 @@ class Stripe(object):
             debug_string = " paython.gateways.stripe.parse() -- Sending charge "
             print debug_string.center(80, '=')
 
-        credit_card.validate() # validate the card first
         amount = int(float(amount)*100) # then change the amount to how stripe likes it
 
         start = time.time() # timing it
