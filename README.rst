@@ -101,12 +101,12 @@ This is the standard paython response.
     }
 ```
 
-Install Requirements
-===========================
+Install
+=======
 
-You need pip::
+You can use pip to install Paython::
 
-    pip install -r requirements.txt
+    pip install paython
 
 Run Tests
 =========
