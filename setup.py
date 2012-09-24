@@ -1,5 +1,8 @@
 import os
-import paython
+
+# TODO Make paython importable
+# it can't be imported since it tries to use suds
+# import paython
 
 from setuptools import setup, find_packages
 
@@ -12,7 +15,7 @@ def read(fname):
 
 setup(
     name = "paython",
-    version = paython.__version__,
+    version = "0.0.2",
     author = "Auston Bunsen, Igor Guerrero",
     author_email = "auston.bunsen@gmail.com",
     description = ("Trying to make it easy to accept payments in Python."),
