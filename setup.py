@@ -1,4 +1,6 @@
 import os
+import paython
+
 from setuptools import setup, find_packages
 
 # Utility function to read the README file.
@@ -10,7 +12,7 @@ def read(fname):
 
 setup(
     name = "paython",
-    version = "0.0.1",
+    version = paython.__version__,
     author = "Auston Bunsen, Igor Guerrero",
     author_email = "auston.bunsen@gmail.com",
     description = ("Trying to make it easy to accept payments in Python."),
@@ -35,6 +37,8 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     install_requires=[
-        'suds'
+        'suds==0.4',
+        'stripe==1.7.4',
+        'samurai==0.6',
     ]
 )
