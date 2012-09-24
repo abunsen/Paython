@@ -15,7 +15,7 @@ def read(fname):
 
 setup(
     name = "paython",
-    version = "0.0.2",
+    version = "0.0.3",
     author = "Auston Bunsen, Igor Guerrero",
     author_email = "auston.bunsen@gmail.com",
     description = ("Trying to make it easy to accept payments in Python."),
