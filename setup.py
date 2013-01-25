@@ -10,9 +10,9 @@ def read(fname):
 
 setup(
     name = "paython",
-    version = "0.0.1",
-    author = "Auston Bunsen, Igor Guerrero",
-    author_email = "auston.bunsen@gmail.com",
+    version = "0.0.2",
+    author = "Auston Bunsen, Igor Guerrero, contributions by jchysk and C. R. Oldham",
+    author_email = "cro@ncbt.org",
     description = ("Trying to make it easy to accept payments in Python."),
     license = "MIT",
     keywords = "payments gateways creditcards processing",
