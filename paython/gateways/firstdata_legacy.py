@@ -119,7 +119,8 @@ class FirstDataLegacy(XMLGateway):
             super(FirstDataLegacy, self).set('order/creditcard/cvmindicator', 'provided')
         
         if self.test: # will almost always return nice
-            super(FirstDataLegacy, self).set('order/orderoptions/result', 'Good')
+            # when hitting the test gateway it's OK for the result to be "Live"
+            super(FirstDataLegacy, self).set('order/orderoptions/result', 'Live')
         else:
             super(FirstDataLegacy, self).set('order/orderoptions/result', 'Live')
         
