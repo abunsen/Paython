@@ -1,0 +1,16 @@
+2013-01-24 cro@ncbt.org
+
+First Data's Global Gateway documentation is not known for being clear and
+easy to understand.  Page 28 of the API User Manual says that setting
+orderoptions/ordertype/result to "good" will give an approved response in
+test mode.  However, what they don't indicate is that orders processed
+against the staging server (for testing) that have a result of "good"
+will not be included in the reporting available via the Virtual Terminal.
+Thus, it's very hard to test any code you have written and verify that
+the gateway actually received the transaction and the data you expected.
+
+The one-line patch I committed just changes orderoptions/ordertype/result
+to "LIVE" for transactions processed in test mode and live mode.
+
+The referenced API User Manual is at
+https://www.firstdata.com/downloads/marketing-merchant/fdgg-api-user-manual.pdf
