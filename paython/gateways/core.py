@@ -54,7 +54,7 @@ class Gateway(object):
             self.set(self.REQUEST_FIELDS['phone'], phone)
 
         if ip:
-            self.set(self.REQUEST_FIELDS['ip'], phone)
+            self.set(self.REQUEST_FIELDS['ip'], ip)
 
         if email:
             if is_valid_email(email):
