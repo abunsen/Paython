@@ -41,7 +41,7 @@ setup(
     ],
     install_requires=[
         'suds==0.4',
-        'stripe==1.7.4',
+        'stripe>=1.7.4',
         'samurai==0.6',
     ]
 )
