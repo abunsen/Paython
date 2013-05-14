@@ -7,6 +7,7 @@ class AuthorizeNet(GetGateway):
     """TODO needs docstring"""
     VERSION = '3.1'
     DELIMITER = ';'
+    LIVE_TEST = 'live_test'
 
     # This is how we determine whether or not we allow 'test' as an init param
     API_URI = {
@@ -26,7 +27,7 @@ class AuthorizeNet(GetGateway):
         'address': 'x_address',
         'address2': None,
         'city': 'x_city',
-        'state': 'x_state', 
+        'state': 'x_state',
         'zipcode': 'x_zip',
         'country': 'x_country',
         'ip': 'x_customer_ip',
@@ -59,7 +60,7 @@ class AuthorizeNet(GetGateway):
 
     # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
     # AVS Responses: A = Address (Street) matches, ZIP does not,  P = AVS not applicable for this transaction,
-    # AVS Responses (cont'd): W = Nine digit ZIP matches, Address (Street) does not, X = Address (Street) and nine digit ZIP match, 
+    # AVS Responses (cont'd): W = Nine digit ZIP matches, Address (Street) does not, X = Address (Street) and nine digit ZIP match,
     # AVS Responses (cont'd): Y = Address (Street) and five digit ZIP match, Z = Five digit ZIP matches, Address (Street) does not
     # response index keys to map the value to its proper dictionary key
     RESPONSE_KEYS = {
@@ -67,7 +68,7 @@ class AuthorizeNet(GetGateway):
         '2':'response_reason_code',
         '3':'response_text',
         '4':'auth_code',
-        '5':'avs_response', 
+        '5':'avs_response',
         '6':'trans_id',
         '9':'amount',
         '11':'trans_type',
@@ -86,6 +87,17 @@ class AuthorizeNet(GetGateway):
     def __init__(self, username='test', password='testpassword', debug=False, test=False, delim=None):
         """
         setting up object so we can run 4 different ways (live, debug, test & debug+test)
+        There are two different test modes:
+        - test=True: regular test mode where the authentication and verification
+          is done on the authorize.net staging server.
+          For this you need to use the credentials of your test account.
+        - test="live_test": the transaction is processed on the live authorize.net
+          server but is not submitted to financial institutions for authorization.
+          For this you need to use the credentials of the live authorize.net
+          account.
+
+        For further details please see:
+        http://developer.authorize.net/guides/AIM/wwhelp/wwhimpl/common/html/wwhelp.htm#context=AIM&file=5_TestTrans.html
         """
         super(AuthorizeNet, self).set('x_login', username)
         super(AuthorizeNet, self).set('x_tran_key', password)
@@ -97,10 +109,17 @@ class AuthorizeNet(GetGateway):
             self.debug = True
 
         if test:
-            self.test = True
-            if self.debug: 
-                debug_string = " paython.gateways.authorize_net.__init__() -- You're in test mode (& debug, obviously) "
+            if test != self.LIVE_TEST:
+                self.test = True
+                test_string = 'regular'
+            else:
+                test_string = 'live'
+                super(AuthorizeNet, self).set('x_test_request', 'TRUE')
+            if self.debug:
+                debug_string = " paython.gateways.authorize_net.__init__() -- You're in %s test mode (& debug, obviously) " % test_string
                 print debug_string.center(80, '=')
+        else:
+            self.test = False
 
         if delim:
             self.DELIMITER = delim
@@ -112,7 +131,7 @@ class AuthorizeNet(GetGateway):
         super(AuthorizeNet, self).set('x_delim_data', 'TRUE')
         super(AuthorizeNet, self).set('x_delim_char', self.DELIMITER)
         super(AuthorizeNet, self).set('x_version', self.VERSION)
-        if self.debug: 
+        if self.debug:
             debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
             print debug_string.center(80, '=')
 
@@ -134,7 +153,7 @@ class AuthorizeNet(GetGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug: 
+            if self.debug:
                 debug_string = "paython.gateways.authorize_net.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
                 print debug_string
 
@@ -185,7 +204,7 @@ class AuthorizeNet(GetGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug: 
+            if self.debug:
                 debug_string = "paython.gateways.authorize_net.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
                 print debug_string
 
@@ -238,7 +257,7 @@ class AuthorizeNet(GetGateway):
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
 
         if split_id: # voids an entire split (alternatively, a trans_id just kills that particular txn)
-            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)            
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
             super(AuthorizeNet, self).unset(self.REQUEST_FIELDS['trans_id'])
 
         # send transaction to gateway!
@@ -250,10 +269,10 @@ class AuthorizeNet(GetGateway):
         Makes a request using lib.api.GetGateway.make_request() & move some debugging away from other methods.
         """
         # decide which url to use (test|live)
-        if self.test:
-            url = self.API_URI['test'] # here just in case we want to granularly change endpoint
+        if self.test == self.LIVE_TEST or not self.test:
+            url = self.API_URI['live']
         else:
-            url = self.API_URI['live'] 
+            url = self.API_URI['test'] # here just in case we want to granularly change endpoint
 
         if self.debug:  # I wish I could hide debugging
             debug_string = " paython.gateways.authorize_net.request() -- Attempting request to: "
@@ -288,7 +307,7 @@ class AuthorizeNet(GetGateway):
         approved = True if response[0] == '1' else False
 
         if self.debug: # :& gonna puke
-            debug_string = " paython.gateways.authorize_net.parse() -- Response as list: " 
+            debug_string = " paython.gateways.authorize_net.parse() -- Response as list: "
             print debug_string.center(80, '=')
             debug_string = '\n%s' % response
             print debug_string
