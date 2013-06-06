@@ -14,6 +14,7 @@ Supported Gateways
 * First Data Global Gateway (formerly Linkpoint?)
 * PlugnPay
 * Samurai
+* ePay (untested)
 
 Usage
 ===========================
