@@ -5,7 +5,7 @@ Trying to make it easy to accept payments in Python. So far, we're Paython - a l
 
 Currently - you can just import the gateway needed from gateways & auth/settle/capture (sale)/void/credit once you instantiate with the proper credentials.
 
-*IMPORTANT* If you fork & make a cool or useful change, we'd really love it if you wrote some associated tests & issued a pull request that way we can keep this repo up to date ;)
+*IMPORTANT:* If you fork & make a cool or useful change, we'd really love it if you wrote some associated tests & issued a pull request that way we can keep this repo up to date ;)
 
 Supported Gateways
 ==================
