@@ -1,7 +1,7 @@
 Paython
 =========
 
-Trying to make it easy to accept payments in Python. So far, we're Paython.
+Trying to make it easy to accept payments in Python. So far, we're Paython - a library in python for payment gateways like Stripe, ePay, Authorize.net, PlugNPay, First Data & more.
 
 Currently - you can just import the gateway needed from gateways & auth/settle/capture (sale)/void/credit once you instantiate with the proper credentials.
 
