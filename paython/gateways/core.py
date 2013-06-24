@@ -1,5 +1,6 @@
 """core.py - Paython's core libraries"""
 
+from paython.exceptions import DataValidationError, MissingTranslationError
 from paython.lib.utils import is_valid_email
 
 class Gateway(object):
@@ -90,7 +91,7 @@ class Gateway(object):
 
     def standardize(self, spec_response, field_mapping, response_time, approved):
         """
-        Translates gateway specific response into Paython generic response. 
+        Translates gateway specific response into Paython generic response.
         Expects list or dictionary for spec_repsonse & dictionary for field_mapping.
         """
         # manual settings

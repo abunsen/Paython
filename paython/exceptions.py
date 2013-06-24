@@ -25,3 +25,10 @@ class RequestError(Exception):
         self.msg = msg
     def __str__(self):
         return repr(self.msg)
+
+class MissingTranslationError(Exception):
+    """ Errors with trying to find a translation"""
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        return repr(self.msg)
