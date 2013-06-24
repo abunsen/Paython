@@ -31,6 +31,7 @@ class AuthorizeNet(GetGateway):
         'zipcode': 'x_zip',
         'country': 'x_country',
         'ip': 'x_customer_ip',
+        'invoice_num': 'x_invoice_num',
         #card
         'number': 'x_card_num',
         'exp_date': 'x_exp_date',
@@ -135,7 +136,7 @@ class AuthorizeNet(GetGateway):
             debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
             print debug_string.center(80, '=')
 
-    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None):
+    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None, invoice_num=None):
         """
         Sends charge for authorization based on amount
         """
@@ -145,6 +146,8 @@ class AuthorizeNet(GetGateway):
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
+        if invoice_num is not None:
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['invoice_num'], invoice_num)
 
         # support for partial auths
         if is_partial:
