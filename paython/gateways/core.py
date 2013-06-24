@@ -1,5 +1,6 @@
 """core.py - Paython's core libraries"""
 
+from paython.exceptions import DataValidationError
 from paython.lib.utils import is_valid_email
 
 class Gateway(object):
