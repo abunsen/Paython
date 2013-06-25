@@ -1,8 +1,6 @@
 import httplib
 import urllib
 import xml.dom.minidom
-import base64
-import re
 
 from utils import parse_xml
 from paython.gateways.core import Gateway
