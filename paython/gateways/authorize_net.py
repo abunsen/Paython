@@ -278,8 +278,9 @@ class AuthorizeNet(GetGateway):
 
         debug_string = " paython.gateways.authorize_net.request() -- Attempting request to: "
         logger.debug(debug_string.center(80, '='))
-        debug_string = "\n %s with params: %s" % (url, super(AuthorizeNet, self).query_string())
+        debug_string = "%s with params: %s" % (url, super(AuthorizeNet, self).query_string())
         logger.debug(debug_string)
+        logger.debug('as dict: %s' % self.REQUEST_DICT)
 
         # make the request
         start = time.time() # timing it
