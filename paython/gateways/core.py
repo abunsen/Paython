@@ -1,7 +1,11 @@
 """core.py - Paython's core libraries"""
 
+import logging
+
 from paython.exceptions import DataValidationError, MissingTranslationError
 from paython.lib.utils import is_valid_email
+
+logger = logging.getLogger(__name__)
 
 class Gateway(object):
     """base gateway class"""
@@ -106,15 +110,12 @@ class Gateway(object):
 
         if isinstance(spec_response, list): # list settings
             i = 0
-            if self.debug:
-                debug_string = 'paython.gateways.core.standardize() -- spec_response: '
-                print debug_string.center(80, '=')
-                debug_string = '\n%s' % spec_response
-                print debug_string
-                debug_string = 'paython.gateways.core.standardize() -- field_mapping: '
-                print debug_string.center(80, '=')
-                debug_string = '\n%s' % field_mapping
-                print debug_string
+            debug_string = 'paython.gateways.core.standardize() -- spec_response: '
+            logger.debug(debug_string.center(80, '='))
+            logger.debug('\n%s' % spec_response)
+            debug_string = 'paython.gateways.core.standardize() -- field_mapping: '
+            logger.debug(debug_string.center(80, '='))
+            logger.debug('\n%s' % field_mapping)
 
             for item in spec_response:
                 iteration_key = str(i) #stringifying because the field_mapping keys are strings

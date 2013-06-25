@@ -1,8 +1,11 @@
 import time
 import urlparse
+import logging
 
 from paython.exceptions import MissingDataError
 from paython.lib.api import PostGateway
+
+logger = logging.getLogger(__name__)
 
 class InnovativeGW(PostGateway):
     """TODO needs docstring"""
@@ -10,7 +13,7 @@ class InnovativeGW(PostGateway):
 
     # This is how we determine whether or not we allow 'test' as an init param
     API_URI = {
-        'live' : 'https://transactions.innovativegateway.com/servlet/com.gateway.aai.Aai'
+        'live': 'https://transactions.innovativegateway.com/servlet/com.gateway.aai.Aai'
     }
 
     # This is how we translate the common Paython fields to Gateway specific fields
@@ -26,7 +29,7 @@ class InnovativeGW(PostGateway):
         'address': 'baddress',
         'address2': 'baddress1',
         'city': 'bcity',
-        'state': 'bstate', 
+        'state': 'bstate',
         'zipcode': 'bzip',
         'country': 'bcountry',
         'ip': None,
@@ -57,17 +60,17 @@ class InnovativeGW(PostGateway):
 
     # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
     # AVS Responses: A = Address (Street) matches, ZIP does not,  P = AVS not applicable for this transaction,
-    # AVS Responses (cont'd): W = Nine digit ZIP matches, Address (Street) does not, X = Address (Street) and nine digit ZIP match, 
+    # AVS Responses (cont'd): W = Nine digit ZIP matches, Address (Street) does not, X = Address (Street) and nine digit ZIP match,
     # AVS Responses (cont'd): Y = Address (Street) and five digit ZIP match, Z = Five digit ZIP matches, Address (Street) does not
     # AVS Responses (cont'd): N = Neither the street address nor the postal code matches. R = Retry, System unavailable (maybe due to timeout)
-    # AVS Responses (cont'd): S = Service not supported. U = Address information unavailable. E = Data not available/error invalid. 
+    # AVS Responses (cont'd): S = Service not supported. U = Address information unavailable. E = Data not available/error invalid.
     # AVS Responses (cont'd): G = Non-US card issuer that does not participate in AVS
     # response index keys to map the value to its proper dictionary key
     # it goes like this: 'gateway_specific_parameter' ==> 'paython_key'
     RESPONSE_KEYS = {
         'error':'response_text',
         'messageid':'auth_code',
-        'avs':'avs_response', 
+        'avs':'avs_response',
         'anatransid':'trans_id',
         'fulltotal':'amount',
         'trantype':'trans_type',
@@ -103,10 +106,9 @@ class InnovativeGW(PostGateway):
         super(InnovativeGW, self).set('response_mode', 'simple')
         super(InnovativeGW, self).set('response_fmt', 'url_encoded')
         super(InnovativeGW, self).set('upg_auth', 'zxcvlkjh')
-        
-        if self.debug: 
-            debug_string = " paython.gateways.innovative_gw.charge_setup() Just set up for a charge "
-            print debug_string.center(80, '=')
+
+        debug_string = " paython.gateways.innovative_gw.charge_setup() Just set up for a charge "
+        logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
         """
@@ -121,9 +123,7 @@ class InnovativeGW(PostGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug: 
-                debug_string = "paython.gateways.innovative_gw.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
+            logger.debug("paython.gateways.innovative_gw.auth()  -- No CreditCard object present. You passed in %s " % (credit_card))
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
@@ -170,9 +170,7 @@ class InnovativeGW(PostGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug: 
-                debug_string = "paython.gateways.innovative_gw.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
+            logger.debug("paython.gateways.innovative_gw.capture()  -- No CreditCard object present. You passed in %s " % (credit_card))
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
@@ -230,23 +228,21 @@ class InnovativeGW(PostGateway):
         Makes a request using lib.api.GetGateway.make_request() & move some debugging away from other methods.
         """
         # there is only a live environment, with test credentials
-        url = self.API_URI['live'] 
+        url = self.API_URI['live']
 
-        if self.debug:  # I wish I could hide debugging
-            debug_string = " paython.gateways.innovative_gw.request() -- Attempting request to: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s with params: %s" % (url, super(InnovativeGW, self).params())
-            print debug_string
+        debug_string = " paython.gateways.innovative_gw.request() -- Attempting request to: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug("\n %s with params: %s" %
+                     (url, super(InnovativeGW, self).params()))
 
         # make the request
         start = time.time() # timing it
         response = super(InnovativeGW, self).make_request(url)
         end = time.time() # done timing it
-        response_time = '%0.2f' % (end-start)
+        response_time = '%0.2f' % (end - start)
 
-        if self.debug: # debugging makes code look so nasty
-            debug_string = " paython.gateways.innovative_gw.request()  -- Request completed in %ss " % response_time
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.innovative_gw.request()  -- Request completed in %ss " % response_time
+        logger.debug(debug_string.center(80, '='))
 
         return response, response_time
 
@@ -254,24 +250,20 @@ class InnovativeGW(PostGateway):
         """
         On Specific Gateway due differences in response from gateway
         """
-        if self.debug: # debugging is so gross
-            debug_string = " paython.gateways.innovative_gw.parse() -- Raw response: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s" % response
-            print debug_string
+        debug_string = " paython.gateways.innovative_gw.parse() -- Raw response: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug("\n %s" % response)
 
         new_response = urlparse.parse_qsl(response)
         response = dict(new_response)
         if 'approval' in response:
-            approved = True 
+            approved = True
         else:
             approved = False
             response['approval'] = 'decline' # there because we have a translation key called "approval" - open to ideas here...
 
-        if self.debug: # :& gonna puke
-            debug_string = " paython.gateways.innovative_gw.parse() -- Response as dict: " 
-            print debug_string.center(80, '=')
-            debug_string = '\n%s' % response
-            print debug_string
+        debug_string = " paython.gateways.innovative_gw.parse() -- Response as dict: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug('\n%s' % response)
 
         return super(InnovativeGW, self).standardize(response, self.RESPONSE_KEYS, response_time, approved)

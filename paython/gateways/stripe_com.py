@@ -1,9 +1,12 @@
 import time
+import logging
 
 try:
     import stripe
 except ImportError:
     raise Exception('Stripe library not found, please install requirements.txt')
+
+logger = logging.getLogger(__name__)
 
 class Stripe(object):
     """TODO needs docstring"""
@@ -13,7 +16,7 @@ class Stripe(object):
         'id':'trans_id',
         'amount':'amount',
         'cvv_response':'cvc_check',
-        'avs_response':'address_line1_check',   
+        'avs_response':'address_line1_check',
     }
     debug = False
     test = False
@@ -23,15 +26,15 @@ class Stripe(object):
         """
         setting up object so we can run 2 different ways (live & debug)
 
-        we have username and api_key because other gateways use "username" 
+        we have username and api_key because other gateways use "username"
         and we want to make it simple to change out gateways ;)
         """
         self.stripe_api.api_key = username or api_key
 
         if debug:
             self.debug = True
-            debug_string = " paython.gateways.stripe.__init__() -- You're in debug mode"
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.stripe.__init__() -- You're in debug mode"
+        logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
         """
@@ -48,9 +51,8 @@ class Stripe(object):
         raise NotImplementedError('Stripe does not support auth or settlement. Try capture().')
 
     def capture(self, amount, credit_card=None, billing_info=None, shipping_info=None):
-        if self.debug: # debugging is so gross
-            debug_string = " paython.gateways.stripe.parse() -- Sending charge "
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.stripe.parse() -- Sending charge "
+        logger.debug(debug_string.center(80, '='))
 
         amount = int(float(amount)*100) # then change the amount to how stripe likes it
 
@@ -92,11 +94,10 @@ class Stripe(object):
         raise NotImplementedError('Stripe does not support transaction voiding. Try credit().')
 
     def credit(self, amount, trans_id):
-        if self.debug: # debugging is so gross
-            debug_string = " paython.gateways.stripe.parse() -- Sending credit "
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.stripe.parse() -- Sending credit "
+        logger.debug(debug_string.center(80, '='))
 
-        amount = int(float(amount)*100)
+        amount = int(float(amount) * 100)
         start = time.time() # timing it
         try:
             ch = self.stripe_api.Charge.retrieve(trans_id)
@@ -104,10 +105,10 @@ class Stripe(object):
         except Exception, e:
             response = {'failure_message':'Unable to refund: %s' % e}
             end = time.time() # done timing it
-            response_time = '%0.2f' % (end-start)
+            response_time = '%0.2f' % (end - start)
         else:
             end = time.time() # done timing it
-            response_time = '%0.2f' % (end-start)
+            response_time = '%0.2f' % (end - start)
 
         return self.parse(response, response_time)
 
@@ -126,12 +127,10 @@ class Stripe(object):
         if hasattr(response, 'to_dict'):
             response = response.to_dict()
 
-        if self.debug: # debugging is so gross
-            debug_string = " paython.gateways.stripe.parse() -- Dict response: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s" % response
-            print debug_string
-        
+        debug_string = " paython.gateways.stripe.parse() -- Dict response: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug("\n %s" % response)
+
         new_response = {}
 
         # alright now lets stuff some info in here
