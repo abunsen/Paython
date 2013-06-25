@@ -1,8 +1,11 @@
 import time
 import urllib
+import logging
 
 from paython.exceptions import MissingDataError
 from paython.lib.api import PostGateway
+
+logger = logging.getLogger(__name__)
 
 class PlugnPay(PostGateway):
 
@@ -28,7 +31,7 @@ class PlugnPay(PostGateway):
     # This is how we translate the common Paython fields to Gateway specific fields
     REQUEST_FIELDS = {
         #contact
-        'full_name' : 'card-name',
+        'full_name': 'card-name',
         'first_name': None,
         'last_name': None,
         'email': 'email',
@@ -315,9 +318,8 @@ class PlugnPay(PostGateway):
         if debug:
             self.debug = True
 
-        if self.debug:
-            debug_string = " paython.gateways.plugnpay.__init__() -- You're in debug mode"
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.plugnpay.__init__() -- You're in debug mode"
+        logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
         """
@@ -330,9 +332,8 @@ class PlugnPay(PostGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug: 
-                debug_string = "paython.gateways.plugnpay.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
+            debug_string = "paython.gateways.plugnpay.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
+            logger.debug(debug_string)
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
@@ -370,9 +371,8 @@ class PlugnPay(PostGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug: 
-                debug_string = "paython.gateways.plugnpay.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
+            debug_string = "paython.gateways.plugnpay.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
+            logger.debug(debug_string)
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
@@ -486,21 +486,19 @@ class PlugnPay(PostGateway):
         Makes a request using lib.api.GetGateway.make_request() & move some debugging away from other methods.
         """
 
-        if self.debug:  # I wish I could hide debugging
-            debug_string = " paython.gateways.plugnpay.request() -- Attempting request to: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s with params: %s" % (self.API_URI, super(PlugnPay, self).params())
-            print debug_string
+        debug_string = " paython.gateways.plugnpay.request() -- Attempting request to: "
+        logger.debug(debug_string.center(80, '='))
+        debug_string = "\n %s with params: %s" % (self.API_URI, super(PlugnPay, self).params())
+        logger.debug(debug_string)
 
         # make the request
         start = time.time() # timing it
         response = super(PlugnPay, self).make_request(self.API_URI)
         end = time.time() # done timing it
-        response_time = '%0.2f' % (end-start)
+        response_time = '%0.2f' % (end - start)
 
-        if self.debug: # debugging makes code look so nasty
-            debug_string = " paython.gateways.plugnpay.request()  -- Request completed in %ss " % response_time
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.plugnpay.request()  -- Request completed in %ss " % response_time
+        logger.debug(debug_string.center(80, '='))
 
         return response, response_time
 
@@ -514,11 +512,10 @@ class PlugnPay(PostGateway):
         `resp-code-msg` : Gateway Response Code Message
         """
 
-        if self.debug: # debugging is so gross
-            debug_string = " paython.gateways.plugnpay.parse() -- Raw response: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s" % raw_response
-            print debug_string
+        debug_string = " paython.gateways.plugnpay.parse() -- Raw response: "
+        logger.debug(debug_string.center(80, '='))
+        debug_string = "\n %s" % raw_response
+        logger.debug(debug_string)
 
         #splitting up response into a list so we can map it to Paython generic response
         raw_response = raw_response.split(self.DELIMITER)
@@ -547,11 +544,10 @@ class PlugnPay(PostGateway):
         # parse Transaction status
         approved = True if response['success'] == 'yes' else False
 
-        if self.debug: # :& gonna puke
-            debug_string = " paython.gateways.plugnpay.parse() -- Response as list: " 
-            print debug_string.center(80, '=')
-            debug_string = '\n%s' % response
-            print debug_string
+        debug_string = " paython.gateways.plugnpay.parse() -- Response as list: "
+        logger.debug(debug_string.center(80, '='))
+        debug_string = '\n%s' % response
+        logger.debug(debug_string)
 
         return super(PlugnPay, self).standardize(response, self.RESPONSE_KEYS, response_time, approved)
 
