@@ -1,9 +1,12 @@
 import re
 import time
 import urlparse
+import logging
 
 from paython.exceptions import DataValidationError, MissingDataError
 from paython.lib.api import XMLGateway
+
+logger = logging.getLogger(__name__)
 
 class FirstDataLegacy(XMLGateway):
     """First data legacy support"""
@@ -101,9 +104,8 @@ class FirstDataLegacy(XMLGateway):
 
         if test:
             self.test = True
-            if self.debug: 
-                debug_string = " paython.gateways.firstdata_legacy.__init__() -- You're in test mode (& debug, obviously) "
-                print debug_string.center(80, '=')
+            debug_string = " paython.gateways.firstdata_legacy.__init__() -- You're in test mode (& debug, obviously) "
+            logger.debug(debug_string.center(80, '='))
 
     def charge_setup(self):
         """
@@ -117,9 +119,8 @@ class FirstDataLegacy(XMLGateway):
         else:
             super(FirstDataLegacy, self).set('order/orderoptions/result', 'Live')
         
-        if self.debug: 
-            debug_string = " paython.gateways.firstdata_legacy.charge_setup() Just set up for a charge "
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.firstdata_legacy.charge_setup() Just set up for a charge "
+        logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
         """
@@ -138,7 +139,7 @@ class FirstDataLegacy(XMLGateway):
             matches = re.match('\d+', billing_info['address'])
         except KeyError:
             raise DataValidationError('Unable to find a billing address to extract a number from for gateway')
-        
+
         if matches:
             super(FirstDataLegacy, self).set('order/billing/addrnum', matches.group()) #hardcoded because of uniqueness to gateway
         else:
@@ -146,9 +147,8 @@ class FirstDataLegacy(XMLGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug: 
-                debug_string = "paython.gateways.firstdata_legacy.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
+            debug_string = "paython.gateways.firstdata_legacy.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
+            logger.debug(debug_string)
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
@@ -201,9 +201,7 @@ class FirstDataLegacy(XMLGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug: 
-                debug_string = "paython.gateways.firstdata_legacy.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
+            logger.debug("paython.gateways.firstdata_legacy.capture()  -- No CreditCard object present. You passed in %s " % (credit_card))
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
@@ -262,11 +260,11 @@ class FirstDataLegacy(XMLGateway):
         #getting the uri to POST xml to
         uri = urlparse.urlparse(self.API_URI['live']).path
 
-        if self.debug:  # I wish I could hide debugging
-            debug_string = " paython.gateways.firstdata_legacy.request() -- Attempting request to: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s with params: %s" % (self.API_URI['live'], super(FirstDataLegacy, self).request_xml())
-            print debug_string
+        debug_string = " paython.gateways.firstdata_legacy.request() -- Attempting request to: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug("\n %s with params: %s" %
+                     (self.API_URI['live'],
+                      super(FirstDataLegacy, self).request_xml()))
 
         # make the request
         start = time.time() # timing it
@@ -274,9 +272,8 @@ class FirstDataLegacy(XMLGateway):
         end = time.time() # done timing it
         response_time = '%0.2f' % (end-start)
 
-        if self.debug: # debugging makes code look so nasty
-            debug_string = " paython.gateways.firstdata_legacy.request()  -- Request completed in %ss " % response_time
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.firstdata_legacy.request()  -- Request completed in %ss " % response_time
+        logger.debug(debug_string.center(80, '='))
 
         return response, response_time
 
@@ -284,19 +281,15 @@ class FirstDataLegacy(XMLGateway):
         """
         On Specific Gateway due differences in response from gateway
         """
-        if self.debug: # debugging is so gross
-            debug_string = " paython.gateways.firstdata_legacy.parse() -- Raw response: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s" % response
-            print debug_string
+        debug_string = " paython.gateways.firstdata_legacy.parse() -- Raw response: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug("\n %s" % response)
 
         response = response['response']
         approved = True if response['r_approved'] == 'APPROVED' else False
 
-        if self.debug: # :& gonna puke
-            debug_string = " paython.gateways.firstdata_legacy.parse() -- Response as dict: " 
-            print debug_string.center(80, '=')
-            debug_string = '\n%s' % response
-            print debug_string
+        debug_string = " paython.gateways.firstdata_legacy.parse() -- Response as dict: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug('\n%s' % response)
 
         return super(FirstDataLegacy, self).standardize(response, self.RESPONSE_KEYS, response_time, approved)

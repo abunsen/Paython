@@ -1,7 +1,10 @@
 import time
+import logging
 
 from paython.exceptions import MissingDataError
 from paython.lib.api import GetGateway
+
+logger = logging.getLogger(__name__)
 
 class AuthorizeNet(GetGateway):
     """TODO needs docstring"""
@@ -116,9 +119,8 @@ class AuthorizeNet(GetGateway):
             else:
                 test_string = 'live'
                 super(AuthorizeNet, self).set('x_test_request', 'TRUE')
-            if self.debug:
-                debug_string = " paython.gateways.authorize_net.__init__() -- You're in %s test mode (& debug, obviously) " % test_string
-                print debug_string.center(80, '=')
+            debug_string = " paython.gateways.authorize_net.__init__() -- You're in %s test mode (& debug, obviously) " % test_string
+            logger.debug(debug_string.center(80, '='))
         else:
             self.test = False
 
@@ -132,9 +134,8 @@ class AuthorizeNet(GetGateway):
         super(AuthorizeNet, self).set('x_delim_data', 'TRUE')
         super(AuthorizeNet, self).set('x_delim_char', self.DELIMITER)
         super(AuthorizeNet, self).set('x_version', self.VERSION)
-        if self.debug:
-            debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
+        logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None, invoice_num=None):
         """
@@ -156,9 +157,8 @@ class AuthorizeNet(GetGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug:
-                debug_string = "paython.gateways.authorize_net.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
+            debug_string = "paython.gateways.authorize_net.auth()  -- No CreditCard object present. You passed in %s " % (credit_card)
+            logger.debug(debug_string)
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
@@ -207,9 +207,8 @@ class AuthorizeNet(GetGateway):
 
         # validating or building up request
         if not credit_card:
-            if self.debug:
-                debug_string = "paython.gateways.authorize_net.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
-                print debug_string
+            debug_string = "paython.gateways.authorize_net.capture()  -- No CreditCard object present. You passed in %s " % (credit_card)
+            logger.debug(debug_string)
 
             raise MissingDataError('You did not pass a CreditCard object into the auth method')
         else:
@@ -277,21 +276,19 @@ class AuthorizeNet(GetGateway):
         else:
             url = self.API_URI['test'] # here just in case we want to granularly change endpoint
 
-        if self.debug:  # I wish I could hide debugging
-            debug_string = " paython.gateways.authorize_net.request() -- Attempting request to: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s with params: %s" % (url, super(AuthorizeNet, self).query_string())
-            print debug_string
+        debug_string = " paython.gateways.authorize_net.request() -- Attempting request to: "
+        logger.debug(debug_string.center(80, '='))
+        debug_string = "\n %s with params: %s" % (url, super(AuthorizeNet, self).query_string())
+        logger.debug(debug_string)
 
         # make the request
         start = time.time() # timing it
         response = super(AuthorizeNet, self).make_request(url)
         end = time.time() # done timing it
-        response_time = '%0.2f' % (end-start)
+        response_time = '%0.2f' % (end - start)
 
-        if self.debug: # debugging makes code look so nasty
-            debug_string = " paython.gateways.authorize_net.request()  -- Request completed in %ss " % response_time
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.authorize_net.request()  -- Request completed in %ss " % response_time
+        logger.debug(debug_string.center(80, '='))
 
         return response, response_time
 
@@ -299,20 +296,16 @@ class AuthorizeNet(GetGateway):
         """
         On Specific Gateway due differences in response from gateway
         """
-        if self.debug: # debugging is so gross
-            debug_string = " paython.gateways.authorize_net.parse() -- Raw response: "
-            print debug_string.center(80, '=')
-            debug_string = "\n %s" % response
-            print debug_string
+        debug_string = " paython.gateways.authorize_net.parse() -- Raw response: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug("\n %s" % response)
 
         #splitting up response into a list so we can map it to Paython generic response
         response = response.split(self.DELIMITER)
         approved = True if response[0] == '1' else False
 
-        if self.debug: # :& gonna puke
-            debug_string = " paython.gateways.authorize_net.parse() -- Response as list: "
-            print debug_string.center(80, '=')
-            debug_string = '\n%s' % response
-            print debug_string
+        debug_string = " paython.gateways.authorize_net.parse() -- Response as list: "
+        logger.debug(debug_string.center(80, '='))
+        logger.debug('\n%s' % response)
 
         return super(AuthorizeNet, self).standardize(response, self.RESPONSE_KEYS, response_time, approved)

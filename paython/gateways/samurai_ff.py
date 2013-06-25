@@ -1,7 +1,10 @@
 import time
+import logging
 
 from paython.gateways.core import Gateway
 from paython.exceptions import *
+
+logger = logging.getLogger(__name__)
 
 try:
     import samurai.config as config
@@ -35,7 +38,7 @@ class Samurai(Gateway):
         """
         setting up object so we can run 2 different ways (live & debug)
 
-        we have username and api_key because other gateways use "username" 
+        we have username and api_key because other gateways use "username"
         and we want to make it simple to change out gateways ;)
         """
         config.merchant_key = merchant_key
@@ -47,8 +50,8 @@ class Samurai(Gateway):
 
         if debug:
             self.debug = True
-            debug_string = " paython.gateways.samurai_ff.__init__() -- You're in debug mode"
-            print debug_string.center(80, '=')
+        debug_string = " paython.gateways.samurai_ff.__init__() -- You're in debug mode"
+        logger.debug(debug_string.center(80, '='))
 
     def set(self, key, value):
         """
@@ -79,14 +82,13 @@ class Samurai(Gateway):
         card._exp_yr_style = True
         super(Samurai, self).use_credit_card(card)
         pm = PaymentMethod.create(
-                    card.number, 
-                    card.verification_value, 
+                    card.number,
+                    card.verification_value,
                     card.exp_month, card.exp_year, **billing_info)
 
-        if self.debug:
-            debug_string = " paython.gateways.samurai_ff.charge_setup() -- response on setting pm"
-            print debug_string.center(80, '=')
-            print dir(pm)
+        debug_string = " paython.gateways.samurai_ff.charge_setup() -- response on setting pm"
+        logger.debug(debug_string.center(80, '='))
+        logger.debug(dir(pm))
 
         if pm.errors:
             raise DataValidationError('Invalid Card Data: %s' % pm.errors[pm.error_messages[0]['context']][0])
