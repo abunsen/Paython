@@ -7,4 +7,4 @@ install:
   - pip install coverage flake8 --use-mirrors
 script:
   - nosetests --with-coverage
-  - flake8 paython
+  - flake8 --exit-zero paython 
