@@ -1,7 +1,7 @@
 Paython
 =========
 
-"!https://travis-ci.org/abunsen/Paython.png!":https://travis-ci.org/abunsen/Paython
+[![Build Status](https://travis-ci.org/abunsen/Paython.png)](https://travis-ci.org/abunsen/Paython)
 
 Trying to make it easy to accept payments in Python. So far, we're Paython - a library in python for payment gateways like Stripe, ePay, Authorize.net, PlugNPay, First Data & more.
 
