@@ -6,5 +6,5 @@ install:
   - pip install -r requirements.txt --use-mirrors
   - pip install coverage flake8 --use-mirrors
 script:
-  - nosetests --with-coverage
+  - nosetests --with-coverage --cover-package=paython
   - flake8 --exit-zero paython 
