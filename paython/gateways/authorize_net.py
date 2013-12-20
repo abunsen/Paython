@@ -60,6 +60,7 @@ class AuthorizeNet(GetGateway):
         'alt_trans_id': None,
         'split_tender_id':'x_split_tender_id',
         'is_partial':'x_allow_partial_auth',
+        'duplicate_window': 'x_duplicate_window'
     }
 
     # Response Code: 1 = Approved, 2 = Declined, 3 = Error, 4 = Held for Review
@@ -171,7 +172,7 @@ class AuthorizeNet(GetGateway):
         debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
         logger.debug(debug_string.center(80, '='))
 
-    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None, invoice_num=None):
+    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None, invoice_num=None, duplicate_window=120):
         """
         Sends charge for authorization based on amount
         """
@@ -181,6 +182,8 @@ class AuthorizeNet(GetGateway):
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['duplicate_window'], duplicate_window)
+   
         if invoice_num is not None:
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['invoice_num'], invoice_num)
 
@@ -208,7 +211,7 @@ class AuthorizeNet(GetGateway):
         response, response_time = self.request()
         return self.parse(response, response_time)
 
-    def settle(self, amount, trans_id, split_id=None):
+    def settle(self, amount, trans_id, split_id=None, duplicate_window=120):
         """
         Sends prior authorization to be settled based on amount & trans_id PRIOR_AUTH_CAPTURE
         """
@@ -219,6 +222,7 @@ class AuthorizeNet(GetGateway):
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'PRIOR_AUTH_CAPTURE')
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_id'], trans_id)
+        super(AuthorizeNet, self).set(self.REQUEST_FIELDS['duplicate_window'], duplicate_window)
 
         if split_id: # settles the entire split
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['split_tender_id'], split_id)
