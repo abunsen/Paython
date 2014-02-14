@@ -120,5 +120,14 @@ def is_valid_email(email):
     pat = '^([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$'
     return re.search(pat, email, re.IGNORECASE)
 
+def is_valid_aba(aba):
+    try:
+        num = map(int, aba)
+    except ValueError:
+        return False
+    else:
+        return not sum([3*x for x in num[::3]]+[7*x for x in num[1::3]]+[x for x in num[2::3]]) % 10
+
 def transform_keys():
     raise NotImplemented
+    

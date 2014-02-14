@@ -32,6 +32,17 @@ class Gateway(object):
                     self.set(self.REQUEST_FIELDS[key], value)
                 except KeyError:
                     pass # it is okay to fail (on exp_month & exp_year)
+     
+    def use_echeck(self, bank_account):
+        """
+        Set up echceck info use (if necessary for transaction)
+        """
+        for key, value in bank_account.__dict__.items():
+            if not key.startswith('_'):
+                try:
+                    self.set(self.REQUEST_FIELDS[key], value)
+                except KeyError:
+                    pass
 
     def set_billing_info(self, address=None, address2=None, city=None, state=None, zipcode=None, country=None, phone=None, email=None, ip=None, first_name=None, last_name=None):
         """
