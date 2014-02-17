@@ -21,9 +21,9 @@ class AuthECheckDotNet(AuthorizeNet):
     def __init__(self, username='test', password='testpassword', debug=False, test=False, delim=None):
         #Set Required Values
         super(AuthECheckDotNet, self).__init__(username=username, password=password,
-                           debug=debug, test=method.test,delim=delim)
+                           debug=debug, test=test,delim=delim)
         # Update Fields to bubble up to Base Class
-        super(AuthECheckDotNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
+        super(AuthorizeNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
         
     def charge_setup(self):
         super(AuthECheckDotNet,self).charge_setup()

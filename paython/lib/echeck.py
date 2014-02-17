@@ -1,4 +1,5 @@
 from paython.exceptions import DataValidationError
+from paython.lib.utils import is_valid_aba
 
 class ECheck(object):
     """
@@ -40,7 +41,7 @@ class ECheck(object):
         """
         string repr for debugging
         """
-        return u'<eCheck -- {0.full_name}, aba_code: {0.aba_code}, acct_num: {0.account_num}, acct_type: {0.acct_type} \
+        return u'<eCheck -- {0.acct_name}, aba_code: {0.aba_code}, acct_num: {0.acct_num}, acct_type: {0.acct_type} \
                  bank_name: {0.bank_name}>, check_num: {0.check_num}'.format(self)
 
 
