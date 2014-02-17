@@ -59,9 +59,9 @@ class AuthECheckDotNet(AuthorizeNet):
             super(AuthECheckDotNet, self).use_echeck(bank_account)
 
         #Set Conditionally Required Fields
-        if echeck_type == 'ARC' or echeck_type == 'BOC'
+        if echeck_type == 'ARC' or echeck_type == 'BOC':
             super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['check_num'], bank_account.check_num)
-        elif echeck_type == 'WEB' or echeck_type == 'TEL'
+        elif echeck_type == 'WEB' or echeck_type == 'TEL':
             super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['recurring_billing'], bank_account.recurring_billing)
             
         if billing_info:
