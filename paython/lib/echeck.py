@@ -25,6 +25,23 @@ class ECheck(object):
         self.recurring_billing = recurring_billing
 
         self.strict = strict
+    
+    def __repr__(self):
+        """
+        string repr for debugging
+        """
+        return u'<eCheck -- {0.acct_name}, aba_code: {0.aba_code}, acct_num: {0.safe_num}, acct_type: {0.acct_type} \
+                 bank_name: {0.bank_name}>, check_num: {0.check_num}'.format(self)
+
+
+    @property
+    def safe_num(self):
+        """
+        outputs the account number with *'s, only exposing last four digits of account number
+        """
+        account_length = len(self.acct_num)
+        stars = '*' * (account_length - 4)
+        return '{0}{1}'.format(stars, self.acct_num[-4:])
 
     def is_valid(self):
         """
@@ -36,14 +53,6 @@ class ECheck(object):
             return False
         else:
             return True
-
-    def __repr__(self):
-        """
-        string repr for debugging
-        """
-        return u'<eCheck -- {0.acct_name}, aba_code: {0.aba_code}, acct_num: {0.acct_num}, acct_type: {0.acct_type} \
-                 bank_name: {0.bank_name}>, check_num: {0.check_num}'.format(self)
-
 
     def validate(self):
         """
