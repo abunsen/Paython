@@ -169,7 +169,6 @@ class GetGateway(Gateway):
         GETs url with params - simple enough... string uri, string params
         """
         try:
-            import pdb;pdb.set_trace()
             params = self.query_string()
             request = urllib.urlopen('%s%s' % (uri, params))
 
