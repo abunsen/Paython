@@ -4,7 +4,7 @@ class ECheck(object):
     """
     generic ECheck object
     """
-    def __init__(self, aba_code, acct_num, acct_type, bank_name,first_name=None, last_name=None, acct_name=None, check_num=None, strict=False):
+    def __init__(self, aba_code, acct_num, acct_type, bank_name,first_name=None, last_name=None, acct_name=None, check_num=None,recurring_billing=None, strict=False):
         """
         sets eCheck info
         """
@@ -21,6 +21,7 @@ class ECheck(object):
         self.acct_type = acct_type
         self.bank_name = bank_name
         self.check_num = check_num
+        self.recurring_billing = recurring_billing
 
         self.strict = strict
 

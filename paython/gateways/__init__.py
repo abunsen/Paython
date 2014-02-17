@@ -4,3 +4,4 @@ from firstdata_legacy import FirstDataLegacy
 from plugnpay import PlugnPay
 from stripe_com import Stripe
 from samurai_ff import Samurai
+from authecheckdotnet import AuthECheckDotNet
