@@ -171,7 +171,6 @@ class GetGateway(Gateway):
         try:
             params = self.query_string()
             request = urllib.urlopen('%s%s' % (uri, params))
-
             return request.read()
         except:
             raise GatewayError('Error making request to gateway')

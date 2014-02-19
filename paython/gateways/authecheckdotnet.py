@@ -24,21 +24,19 @@ class AuthECheckDotNet(AuthorizeNet):
                            debug=debug, test=test,delim=delim)
         # Update Fields to bubble up to Base Class
         super(AuthorizeNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
-        
-    def charge_setup(self):
-        super(AuthECheckDotNet,self).charge_setup()
-        """ Change Method to Echeck Instead of CC """
-        super(AuthECheckDotNet, self).set('x_method', 'ECHECK')
+      
 
     def transact(self, amount, echeck_type=None, bank_account=None, billing_info=None, shipping_info=None, invoice_num=None):
         """
         Sends Bank and Check details for authorization
         """
         #set up transaction
-        self.charge_setup()
-
+        super(AuthECheckDotNet,self).charge_setup()
+        """ Change Method to Echeck Instead of CC """
+        super(AuthECheckDotNet, self).set('x_method', 'ECHECK')
         #setting transaction data
         super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['amount'], amount)
+        super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_CAPTURE')
 
         if not echeck_type:
             debug_string = "No Echeck Type Given"

@@ -178,7 +178,6 @@ class AuthorizeNet(GetGateway):
         """
         #set up transaction
         self.charge_setup() # considering turning this into a decorator?
-
         #setting transaction data
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
