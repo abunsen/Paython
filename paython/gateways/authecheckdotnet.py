@@ -26,7 +26,54 @@ class AuthECheckDotNet(AuthorizeNet):
         super(AuthorizeNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
       
 
-    def transact(self, amount, echeck_type=None, bank_account=None, billing_info=None, shipping_info=None, invoice_num=None):
+    def auth(self, amount, echeck_type=None, bank_account=None, billing_info=None, shipping_info=None, invoice_num=None, duplicate_window=120):
+        """
+        Sends Bank and Check details for authorization
+        """
+        #set up transaction
+        super(AuthECheckDotNet,self).charge_setup()
+        """ Change Method to Echeck Instead of CC """
+        super(AuthECheckDotNet, self).set('x_method', 'ECHECK')
+        #setting transaction data
+        super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['amount'], amount)
+        super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
+        super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['duplicate_window'], duplicate_window)
+
+        if not echeck_type:
+            debug_string = "No Echeck Type Given"
+            logger.debug(debug_string)
+            raise MissingDataError('You did not pass an ECheck Type')
+        else:
+            super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['echeck_type'], echeck_type)
+
+        if invoice_num is not None:
+            super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['invoice_num'], invoice_num)
+
+        # validating or building up request
+        if not bank_account:
+            debug_string = "No Account object present. You passed in %s " % (bank_account)
+            logger.debug(debug_string)
+            raise MissingDataError('You did not pass an account object into the arc method')
+        else:
+            super(AuthECheckDotNet, self).use_echeck(bank_account)
+
+        #Set Conditionally Required Fields
+        if echeck_type == 'ARC' or echeck_type == 'BOC':
+            super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['check_num'], bank_account.check_num)
+        elif echeck_type == 'WEB' or echeck_type == 'TEL':
+            super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['recurring_billing'], bank_account.recurring_billing)
+            
+        if billing_info:
+            super(AuthECheckDotNet, self).set_billing_info(**billing_info)
+
+        if shipping_info:
+            super(AuthECheckDotNet, self).set_shipping_info(**shipping_info)
+
+        # send transaction to gateway!
+        response, response_time = super(AuthECheckDotNet,self).request()
+        return super(AuthECheckDotNet,self).parse(response, response_time)
+        
+    def capture(self, amount, echeck_type=None, bank_account=None, billing_info=None, shipping_info=None, invoice_num=None, duplicate_window=120):
         """
         Sends Bank and Check details for authorization
         """
@@ -37,6 +84,7 @@ class AuthECheckDotNet(AuthorizeNet):
         #setting transaction data
         super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_CAPTURE')
+        super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['duplicate_window'], duplicate_window)
 
         if not echeck_type:
             debug_string = "No Echeck Type Given"
