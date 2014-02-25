@@ -1,7 +1,7 @@
 from paython.exceptions import GatewayError
-from paython.lib.utils import parse_xml, is_valid_email
+from paython.lib.utils import parse_xml, is_valid_email, is_valid_aba
 
-from nose.tools import assert_equals, raises
+from nose.tools import assert_equals, raises, assert_true, assert_false
 
 @raises(GatewayError)
 def test_parse_xml():
@@ -39,3 +39,8 @@ def test_append_to_root():
 def test_valid_email():
     """testing our email validation"""
     assert_equals(is_valid_email("lol@lol.com") is None, False)
+
+def test_valid_email():
+    """testing ABA number validation"""
+    assert_true(is_valid_aba("789456124"))
+    assert_false(is_valid_aba("789456120"))
