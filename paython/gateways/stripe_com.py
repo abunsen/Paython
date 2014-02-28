@@ -37,18 +37,62 @@ class Stripe(object):
         logger.debug(debug_string.center(80, '='))
 
     def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None):
-        """
-        Not implemented because stripe does not support authorizations:
-        https://answers.stripe.com/questions/can-i-authorize-transactions-first-then-charge-the-customer-after-service-is-comp
-        """
-        raise NotImplementedError('Stripe does not support auth or settlement. Try capture().')
+        debug_string = " paython.gateways.stripe.parse() -- Sending charge for Authorization"
+        logger.debug(debug_string.center(80, '='))
+
+        amount = int(float(amount)*100) # then change the amount to how stripe likes it
+
+        start = time.time() # timing it
+        try:
+            response = self.stripe_api.Charge.create(
+                amount=amount,
+                currency="usd",
+                card={
+                    "name":credit_card.full_name,
+                    "number": credit_card.number,
+                    "exp_month": credit_card.exp_month,
+                    "exp_year": credit_card.exp_year,
+                    "cvc": credit_card.verification_value if credit_card.verification_value else None,
+                    "address_line1":billing_info.get('address'),
+                    "address_line2":billing_info.get('address2'),
+                    "address_zip":billing_info.get('zipcode'),
+                    "address_state":billing_info.get('state'),
+                },
+                capture=False,
+            )
+        except stripe.InvalidRequestError, e:
+            response = {'failure_message':'Invalid Request: %s' % e}
+            end = time.time() # done timing it
+            response_time = '%0.2f' % (end-start)
+        except stripe.CardError, e:
+            response = {'failure_message':'Card Error: %s' % e}
+            end = time.time() # done timing it
+            response_time = '%0.2f' % (end-start)
+        else:
+            end = time.time() # done timing it
+            response_time = '%0.2f' % (end-start)
+
+        return self.parse(response, response_time)
 
     def settle(self, amount, trans_id):
-        """
-        Not implemented because stripe does not support auth/settle:
-        https://answers.stripe.com/questions/can-i-authorize-transactions-first-then-charge-the-customer-after-service-is-comp
-        """
-        raise NotImplementedError('Stripe does not support auth or settlement. Try capture().')
+        debug_string = " paython.gateways.stripe.parse() -- Sending charge For Capture with Prior Authorization"
+        logger.debug(debug_string.center(80, '='))
+
+        amount = int(float(amount)*100) # then change the amount to how stripe likes it
+
+        start = time.time() # timing it
+        try:
+            charge = self.stripe_api.Charge.retrieve(trans_id)
+            response = charge.capture()
+        except stripe.InvalidRequestError, e:
+            response = {'failure_message':'Invalid Request: %s' % e}
+            end = time.time() # done timing it
+            response_time = '%0.2f' % (end-start)
+        else:
+            end = time.time() # done timing it
+            response_time = '%0.2f' % (end-start)
+
+        return self.parse(response, response_time)
 
     def capture(self, amount, credit_card=None, billing_info=None, shipping_info=None):
         debug_string = " paython.gateways.stripe.parse() -- Sending charge "
