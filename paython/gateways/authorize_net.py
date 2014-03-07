@@ -169,6 +169,7 @@ class AuthorizeNet(GetGateway):
         super(AuthorizeNet, self).set('x_delim_data', 'TRUE')
         super(AuthorizeNet, self).set('x_delim_char', self.DELIMITER)
         super(AuthorizeNet, self).set('x_version', self.VERSION)
+        super(AuthorizeNet, self).set('x_method', 'CC')
         debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
         logger.debug(debug_string.center(80, '='))
 
