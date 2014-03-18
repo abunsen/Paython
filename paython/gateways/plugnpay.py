@@ -290,8 +290,8 @@ class PlugnPay(PostGateway):
         'resp-code-msg' : 'response_reason',
         'resp-code' : 'response_reason_code',
         'auth-code':'auth_code',
-        'avs-code':'avs_response', 
-        'avs-code-msg':'avs_response_text', 
+        'avs-code':'avs_response',
+        'avs-code-msg':'avs_response_text',
         'orderID':'trans_id',
         'card-amount':'amount',
         'authtype':'trans_type',
@@ -529,9 +529,19 @@ class PlugnPay(PostGateway):
         # map AVS code to string based on `card-type`
         if response.has_key('avs-code'):
             if response['card-type'] in self.AVS_RESPONSE_KEYS:
-                response['avs-code-msg'] = self.AVS_RESPONSE_KEYS[response['card-type']][response['avs-code']]
+                # FIXME: PlugnPay workaround
+                # this
+                # response['avs-code-msg'] = self.AVS_RESPONSE_KEYS[response['card-type']][response['avs-code']]
+                if response['avs-code'] in self.AVS_RESPONSE_KEYS[response['card-type']]:
+                    response['avs-code-msg'] = self.AVS_RESPONSE_KEYS[response['card-type']][response['avs-code']]
+                else:
+                    response['avs-code-msg'] = 'invalid API response'
             else: # default to VISA AVS description
-                response['avs-code-msg'] = self.AVS_RESPONSE_KEYS['VISA'][response['avs-code']]
+                # response['avs-code-msg'] = self.AVS_RESPONSE_KEYS['VISA'][response['avs-code']]
+                if response['avs-code'] in self.AVS_RESPONSE_KEYS['VISA']:
+                    response['avs-code-msg'] = self.AVS_RESPONSE_KEYS['VISA'][response['avs-code']]
+                else:
+                    response['avs-code-msg'] = 'invalid API response'
 
         # simple response code description
         if response.has_key('sresp'):
@@ -550,4 +560,3 @@ class PlugnPay(PostGateway):
         logger.debug(debug_string)
 
         return super(PlugnPay, self).standardize(response, self.RESPONSE_KEYS, response_time, approved)
-
