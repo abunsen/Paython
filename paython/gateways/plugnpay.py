@@ -528,9 +528,11 @@ class PlugnPay(PostGateway):
 
         # map AVS code to string based on `card-type`
         if response.has_key('avs-code'):
-            if response['card-type'] in self.AVS_RESPONSE_KEYS:
+            if (response.get('card-type') in self.AVS_RESPONSE_KEYS and
+                response['avs-code'] in self.AVS_RESPONSE_KEYS[response['card-type']]
+            ):
                 response['avs-code-msg'] = self.AVS_RESPONSE_KEYS[response['card-type']][response['avs-code']]
-            else: # default to VISA AVS description
+            elif response['avs-code'] in self.AVS_RESPONSE_KEYS['VISA']:  # default to VISA AVS description
                 response['avs-code-msg'] = self.AVS_RESPONSE_KEYS['VISA'][response['avs-code']]
 
         # simple response code description
