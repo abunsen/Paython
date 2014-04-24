@@ -296,7 +296,9 @@ class PlugnPay(PostGateway):
         'card-amount':'amount',
         'authtype':'trans_type',
         'merchfraudlev' : 'fraud_level',
-        'alt_trans_id' : 'ref_number' # refnumber
+        'alt_trans_id': 'ref_number',  # refnumber
+        'MErrMsg': 'error_message',  # not sure what M means
+        'FinalStatus': 'final_status'
     }
 
     debug = False
@@ -544,7 +546,14 @@ class PlugnPay(PostGateway):
             response['resp-code-msg'] = self.STATUS_RESPONSE_KEYS[response['resp-code']]
 
         # parse Transaction status
-        approved = True if response['success'] == 'yes' else False
+        # FinalStatus is The Right Way to parse the transaction status
+        # valid FinalStatus values:
+        # success
+        # badcard = transaction declined
+        # problem = transaction could not be processed at this time
+        # fraud = authorization flagged as fraudulent
+        # Unapproved values have an accompanying MErrMsg field saying why
+        approved = response['FinalStatus'] == 'success'
 
         debug_string = " paython.gateways.plugnpay.parse() -- Response as list: "
         logger.debug(debug_string.center(80, '='))
