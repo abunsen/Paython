@@ -591,7 +591,7 @@ class PlugnPay(PostGateway):
                 response['avs-code-msg'] = self.AVS_RESPONSE_KEYS['VISA'][response['avs-code']]
 
         # simple response code description
-        if response.has_key('sresp') and response['sresp'] in self.SIMPLE_STATUS_RESPONSE_KEYS:
+        if response.get('sresp') in self.SIMPLE_STATUS_RESPONSE_KEYS:
             response['sresp-msg'] = self.SIMPLE_STATUS_RESPONSE_KEYS[response['sresp']]
 
         # exact response code description by Merchant Processors
