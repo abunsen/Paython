@@ -113,7 +113,10 @@ class FirstData(PostGateway):
                     self.set(self.REQUEST_FIELDS[key], value)
                 except KeyError:
                     pass # it is okay to fail (on exp_month & exp_year)
+
         #setting credit card correctly
+        if len(credit_card.exp_month) < 2:
+            credit_card.exp_month = "0%s" % credit_card.exp_month
         expire_date = '%s%s' % (credit_card.exp_month, credit_card.exp_year[2:])
         #expire date
         self.set('cc_expiry', expire_date)
