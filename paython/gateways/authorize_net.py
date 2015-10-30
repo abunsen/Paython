@@ -173,7 +173,7 @@ class AuthorizeNet(GetGateway):
         debug_string = " paython.gateways.authorize_net.charge_setup() Just set up for a charge "
         logger.debug(debug_string.center(80, '='))
 
-    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None, invoice_num=None, duplicate_window=120):
+    def auth(self, amount, credit_card=None, billing_info=None, shipping_info=None, is_partial=False, split_id=None, invoice_num=None, duplicate_window=120, customer_ip=None):
         """
         Sends charge for authorization based on amount
         """
@@ -183,6 +183,8 @@ class AuthorizeNet(GetGateway):
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
         super(AuthorizeNet, self).set(self.REQUEST_FIELDS['duplicate_window'], duplicate_window)
+        if customer_ip:
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['ip'], customer_ip) 
    
         if invoice_num is not None:
             super(AuthorizeNet, self).set(self.REQUEST_FIELDS['invoice_num'], invoice_num)

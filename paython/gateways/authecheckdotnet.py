@@ -26,7 +26,7 @@ class AuthECheckDotNet(AuthorizeNet):
         super(AuthorizeNet, self).__init__(translations=self.REQUEST_FIELDS, debug=debug)
       
 
-    def auth(self, amount, echeck_type=None, bank_account=None, billing_info=None, shipping_info=None, invoice_num=None, duplicate_window=120):
+    def auth(self, amount, echeck_type=None, bank_account=None, billing_info=None, shipping_info=None, invoice_num=None, duplicate_window=120, customer_ip=None):
         """
         Sends Bank and Check details for authorization
         """
@@ -38,6 +38,8 @@ class AuthECheckDotNet(AuthorizeNet):
         super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['amount'], amount)
         super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['trans_type'], 'AUTH_ONLY')
         super(AuthECheckDotNet, self).set(self.REQUEST_FIELDS['duplicate_window'], duplicate_window)
+        if customer_ip:
+            super(AuthorizeNet, self).set(self.REQUEST_FIELDS['ip'], customer_ip)
 
         if not echeck_type:
             debug_string = "No Echeck Type Given"
