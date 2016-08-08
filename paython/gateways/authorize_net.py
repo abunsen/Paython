@@ -2,11 +2,11 @@ import time
 import logging
 
 from paython.exceptions import MissingDataError
-from paython.lib.api import GetGateway
+from paython.lib.api import PostGateway
 
 logger = logging.getLogger(__name__)
 
-class AuthorizeNet(GetGateway):
+class AuthorizeNet(PostGateway):
     """TODO needs docstring"""
     VERSION = '3.1'
     DELIMITER = ';'
@@ -312,7 +312,7 @@ class AuthorizeNet(GetGateway):
 
         debug_string = " paython.gateways.authorize_net.request() -- Attempting request to: "
         logger.debug(debug_string.center(80, '='))
-        debug_string = "%s with params: %s" % (url, super(AuthorizeNet, self).query_string())
+        debug_string = "%s with params: %s" % (url, super(AuthorizeNet, self).params())
         logger.debug(debug_string)
         logger.debug('as dict: %s' % self.REQUEST_DICT)
 
