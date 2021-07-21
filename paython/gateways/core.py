@@ -102,7 +102,7 @@ class Gateway(object):
     def standardize(self, spec_response, field_mapping, response_time, approved):
         """
         Translates gateway specific response into Paython generic response.
-        Expects list or dictionary for spec_repsonse & dictionary for field_mapping.
+        Expects list or dictionary for spec_response & dictionary for field_mapping.
         """
         # manual settings
         self.RESPONSE_FIELDS['response_time'] = response_time
