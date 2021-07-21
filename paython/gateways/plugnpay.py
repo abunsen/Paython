@@ -363,7 +363,7 @@ class PlugnPay(PostGateway):
         if password: # optional gateway password
             super(PlugnPay, self).set('publisher-password', password)
 
-        if email: # publisher email to send alerts/notifiation to
+        if email: # publisher email to send alerts/notification to
             super(PlugnPay, self).set('publisher-email', email)
 
         # don't send transaction confirmation email to customer

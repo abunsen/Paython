@@ -235,7 +235,7 @@ class FirstData(PostGateway):
             logger.debug(response)
         if type(self._retry_on_bmc) is int and 0 < self._retry_on_bmc < 4 and response == "Unauthorized Request. Bad or missing credentials.":
             """When FDs servers return "Unauthorized Request. Bad or missing credentials."
-            which happend quite often for ABSOLUTLY no reason. We will try the request again.
+            which happened quite often for ABSOLUTLY no reason. We will try the request again.
             3 attempts will be made if this error occurs.
             I have contacted their support about this issue...sometime ago.
             """

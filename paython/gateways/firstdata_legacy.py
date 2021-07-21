@@ -221,7 +221,7 @@ class FirstDataLegacy(XMLGateway):
     def void(self, trans_id):
         """
         Send a SALE (only works for sales) transaction to be voided (in full) that was initially sent for capture the same day
-        This is so wierd!
+        This is so weird!
         """
         #set up transaction
         self.charge_setup() # considering turning this into a decorator?
